@@ -1,4 +1,6 @@
 #include <Novice.h>
+#include <corecrt_math_defines.h>
+#include <corecrt_math.h>
 
 const char kWindowTitle[] = "LC1D_09_カナヤ_ヒロキ_タイトル";
 
@@ -35,10 +37,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// --- enemy初期化 ---
 	Enemy enemy = {};
-	enemy.pos.x = 200.0f;
-	enemy.pos.y = 100.0f;
-	enemy.height = 100.0f;
-	enemy.width = 200.0f;
+  
+		enemy.pos.x = 640.0f;
+		enemy.pos.y = 100.0f;
+		enemy.height = 100.0f;
+		enemy.width = 200.0f;
+		//敵のHP
+		//int enemyCount = 50;
+
+		//ふり幅
+		float amplitude = 540.0f;//ふり幅、波の高さ（大きさ）
+		float theta = 0.0f;
+
+		//ワープするカウント
+		float enemyTimer = 0.0f;
+		//ウェーブの動き
+		float enemyWave = false;
+
+
+
 
 	// --- enemyBullet初期化 ---
 	Bullet enemyBullet[4]{};
@@ -54,6 +71,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		enemyBullet[i].isBulletShot = false;
 	}
 
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -66,6 +84,42 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓更新処理ここから
 		///
+		
+		
+		//敵のワープ処理
+		enemyTimer++;
+		if (enemyWave) 
+		{
+			//波打つ動き
+			enemy.pos.x = static_cast<float>(sin(theta)) * amplitude + 540;
+			theta += float(M_PI) / 100.0f;
+		}
+		if(enemyTimer == 200)
+		{
+			enemyWave = false;
+			enemy.pos.x = 100.0f;
+			enemy.pos.y = 500.0f;
+		}
+		if (enemyTimer == 400)
+		{
+			enemyWave = false;
+			enemy.pos.x = 800.0f;
+			enemy.pos.y = 500.0f;
+		}
+		if (enemyTimer == 600)
+		{
+			enemyWave = false;
+			enemy.pos.x = 800.0f;
+			enemy.pos.y = 100.0f;
+			enemyTimer = 0.0f;
+		}
+
+
+		
+		
+
+
+
 
 		// --- 敵の弾 ---
 		for (int i = 0; i < enemyBullet[0].columns; ++i) {
@@ -91,6 +145,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
+
+		Novice::ScreenPrintf(0, 0, "%f",enemyTimer);
+		
 		
 		for (int j = 0; j < enemyBullet[0].columns; ++j) {
 			if (enemyBullet[j].isBulletShot) {
