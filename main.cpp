@@ -2,6 +2,8 @@
 
 const char kWindowTitle[] = "LC1D_09_カナヤ_ヒロキ_タイトル";
 
+
+
 struct Vector2
 {
 	float x;
