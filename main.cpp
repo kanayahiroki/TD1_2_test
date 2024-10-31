@@ -1,4 +1,6 @@
 #include <Novice.h>
+#include <corecrt_math_defines.h>
+#include <corecrt_math.h>
 
 const char kWindowTitle[] = "LC1D_09_カナヤ_ヒロキ_タイトル";
 
@@ -23,6 +25,22 @@ struct PlayerBullet
 	int isShot;
 	int type;
 };
+
+
+
+
+
+struct Bullet {
+	Vector2 pos;
+	float width;
+	float height;
+	float speed;
+	int columns;
+	int space;
+	int isBulletShot;
+};
+
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -32,6 +50,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
+
 
 	Player player
 	{
@@ -55,6 +74,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		false,
 		0,
 	};
+
+	
+
+
+
+
+	
+
+
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -67,6 +96,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓更新処理ここから
 		///
+
 		if (keys[DIK_W])
 		{
 			player.pos.y -= player.speed;
@@ -177,6 +207,54 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
 		Novice::ScreenPrintf(20, 40, "%d", playerbullet1.isShot);
+		
+		
+		
+
+
+		
+		
+
+
+
+
+		
+		
+		///
+		/// ↑更新処理ここまで
+		///
+
+		///
+		/// ↓描画処理ここから
+		///
+
+		Novice::ScreenPrintf(0, 0, "%f",enemyTimer);
+		
+		
+		for (int j = 0; j < enemyBullet[0].columns; ++j) {
+			if (enemyBullet[j].isBulletShot) {
+				Novice::DrawBox(
+					static_cast<int>(enemyBullet[0].pos.x) + j * (static_cast<int>(enemyBullet[j].width) + enemyBullet[j].space),
+					static_cast<int>(enemyBullet[j].pos.y),
+					static_cast<int>(enemyBullet[j].width),
+					static_cast<int>(enemyBullet[j].height),
+					0.0f, WHITE,
+					kFillModeSolid
+				);
+			}
+		}
+
+		// 敵描画
+		Novice::DrawBox(
+			static_cast<int>(enemy.pos.x), 
+			static_cast<int>(enemy.pos.y), 
+			static_cast<int>(enemy.width), 
+			static_cast<int>(enemy.height), 
+			0.0f, WHITE, 
+			kFillModeSolid
+		);
+
+
 		///
 		/// ↑描画処理ここまで
 		///
