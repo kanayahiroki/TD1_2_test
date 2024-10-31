@@ -2,6 +2,18 @@
 
 const char kWindowTitle[] = "LC1D_09_カナヤ_ヒロキ_タイトル";
 
+struct Vector2 {
+	float x;
+	float y;
+};
+
+struct Enemy {
+	Vector2 pos;
+	float width;
+	float height;
+	int texture;
+};
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
