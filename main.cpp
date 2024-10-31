@@ -6,6 +6,7 @@ const char kWindowTitle[] = "LC1D_09_カナヤ_ヒロキ_タイトル";
 
 
 
+
 struct Vector2
 {
 	float x;
@@ -29,16 +30,6 @@ struct PlayerBullet
 
 
 
-
-struct Bullet {
-	Vector2 pos;
-	float width;
-	float height;
-	float speed;
-	int columns;
-	int space;
-	int isBulletShot;
-};
 
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -74,11 +65,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		false,
 		0,
 	};
-
-	
-
-
-
 
 	
 
@@ -210,15 +196,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 		
 		
-
-
-		
-		
-
-
-
-
-		
 		
 		///
 		/// ↑更新処理ここまで
@@ -228,31 +205,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		Novice::ScreenPrintf(0, 0, "%f",enemyTimer);
+	
 		
-		
-		for (int j = 0; j < enemyBullet[0].columns; ++j) {
-			if (enemyBullet[j].isBulletShot) {
-				Novice::DrawBox(
-					static_cast<int>(enemyBullet[0].pos.x) + j * (static_cast<int>(enemyBullet[j].width) + enemyBullet[j].space),
-					static_cast<int>(enemyBullet[j].pos.y),
-					static_cast<int>(enemyBullet[j].width),
-					static_cast<int>(enemyBullet[j].height),
-					0.0f, WHITE,
-					kFillModeSolid
-				);
-			}
-		}
-
-		// 敵描画
-		Novice::DrawBox(
-			static_cast<int>(enemy.pos.x), 
-			static_cast<int>(enemy.pos.y), 
-			static_cast<int>(enemy.width), 
-			static_cast<int>(enemy.height), 
-			0.0f, WHITE, 
-			kFillModeSolid
-		);
 
 
 		///
