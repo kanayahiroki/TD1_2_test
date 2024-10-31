@@ -239,7 +239,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
 		Novice::ScreenPrintf(20, 40, "%d", playerbullet1.isShot);
-=======
 		
 		
 		//敵のワープ処理
