@@ -11,7 +11,7 @@ struct Enemy {
 	Vector2 pos;
 	float width;
 	float height;
-	int texture;
+	//int texture;
 };
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -23,6 +23,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// キー入力結果を受け取る箱
 	char keys[256] = {0};
 	char preKeys[256] = {0};
+
+
+	Enemy enemy = {};
+		enemy.pos.x = 200.0f;
+		enemy.pos.y = 100.0f;
+		enemy.height = 100.0f;
+		enemy.width = 200.0f;
+
+	
+
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -43,7 +54,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
-	    
+		Novice::DrawBox(static_cast<int>(enemy.pos.x), static_cast<int>(enemy.pos.y), static_cast<int>(enemy.width), static_cast<int>(enemy.height), 0.0f, WHITE, kFillModeSolid);
 		///
 		/// ↑描画処理ここまで
 		///
