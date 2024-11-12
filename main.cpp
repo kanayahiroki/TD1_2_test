@@ -12,6 +12,7 @@ struct Enemy {
 	Vector2 pos;
 	float width;
 	float height;
+	float speed;
 };
 
 struct Bullet {
@@ -170,6 +171,55 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		10,
 		5,
 		false,
+		0,
+	};
+
+	// --- enemy初期化 ---
+	Enemy enemy = {};
+	enemy.pos.x = 640.0f;
+	enemy.pos.y = 100.0f;
+	enemy.height = 100.0f;
+	enemy.width = 200.0f;
+	enemy.speed = 8.0f;
+
+	//ボスのHP
+	int enemyCount = 40;
+
+	///ふり幅///
+	float amplitude = 540.0f;//ふり幅、波の高さ（大きさ）
+	float theta = 0.0f;
+	///////////
+
+	//最初の動き
+	float enemyMove = false;
+
+
+	//第二の動き
+
+
+	//最後の動き//
+	//ウェーブの動き
+	float enemyWave = false;
+	//ワープするカウント
+	float enemyTimer = 0.0f;
+	////////////////////////
+
+
+// --- enemyBullet初期化 ---
+	Bullet enemyBullet[4]{};
+
+	for (int i = 0; i < 4; ++i) {
+		enemyBullet[i].width = 20.0f;
+		enemyBullet[i].height = 20.0f;
+		enemyBullet[i].pos.x = enemy.pos.x + 8.0f;
+		enemyBullet[i].pos.y = enemy.pos.y + enemy.height;
+		enemyBullet[i].columns = 4;
+		enemyBullet[i].space = 34;
+		enemyBullet[i].speed = 1.0f;
+		enemyBullet[i].isBulletShot = false;
+	}
+
+
 
 	};
 	// ウィンドウの×ボタンが押されるまでループ
@@ -223,18 +273,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				//スペースを押したときのplayerbullet1の動き
 				if (type == 1)
 				{
+
 					playerbullet1.pos.x = player.pos.x;
 					playerbullet1.pos.y = player.pos.y;
+
 					playerbullet1.isShot = true;
 				}
 				////スペースを押したときのplayerbullet2の動き
 				if (type == 2)
 				{
+
+
+					playerbullet2.isShot = true;
+				}
+				if (playerbullet1.isShot == 0 || playerbullet2.isShot == 0)
+
 					playerbullet2.pos.x = player.pos.x + player.radius;
 					playerbullet2.pos.y = player.pos.y;
 					playerbullet2.isShot = true;
 				}
 				if (type == 0)
+
 				{
 					playerbullet1.pos.x = player.pos.x;
 					playerbullet1.pos.y = player.pos.y;
@@ -267,183 +326,273 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				playerbullet2.pos.y = player.pos.x;
 			}
 		}
+
+
+
+
+		//platerの描画
+		Novice::DrawBox(
+			static_cast<int>(player.pos.x),
+			static_cast<int>(player.pos.y),
+			static_cast<int>(player.radius),
+			static_cast<int>(player.radius),
+			0.0f, WHITE, kFillModeSolid);
+		if (playerbullet1.isShot) {
+			Novice::DrawEllipse(
+				static_cast<int>(playerbullet1.pos.x),
+				static_cast<int>(playerbullet1.pos.y),
+				static_cast<int>(playerbullet1.radius),
+				static_cast<int>(playerbullet1.radius),
+				0.0f, WHITE, kFillModeSolid);
+		}
+		if (playerbullet2.isShot) {
+			Novice::DrawEllipse(
+				static_cast<int>(playerbullet2.pos.x),
+				static_cast<int>(playerbullet2.pos.y),
+				static_cast<int>(playerbullet2.radius),
+				static_cast<int>(playerbullet2.radius),
+				0.0f, WHITE, kFillModeSolid);
+		}
+		Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
+		Novice::ScreenPrintf(20, 40, "%d", playerbullet1.isShot);
+
+		////////////////////////////
+		//敵の動き、ワープの処理///
+		///////////////////////////
+
+
+//ワープ
+		if (enemyCount == 20) 
+		{
+			enemyMove = false;
+			enemyTimer++;
+			if (enemyWave)
+			{
+				//波打つ動き
+				enemy.pos.x = static_cast<float>(sin(theta)) * amplitude + 540;
+				theta += float(M_PI) / 100.0f;
+			}
+			if (enemyTimer == 200)
+			{
+				enemyWave = false;
+				enemy.pos.x = 100.0f;
+				enemy.pos.y = 500.0f;
+			}
+			if (enemyTimer == 400)
+			{
+				enemyWave = false;
+				enemy.pos.x = 800.0f;
+				enemy.pos.y = 500.0f;
+			}
+			if (enemyTimer == 600)
+			{
+				enemyWave = false;
+				enemy.pos.x = 800.0f;
+				enemy.pos.y = 100.0f;
+				enemyTimer = 0.0f;
+			}
+		}
+		//敵の動き//
+		///////////
+		enemyMove = true;
+
+
+		//最初の動き//
+		if (enemyMove)
+		{
+			enemy.pos.x += enemy.speed;
+			if (enemy.pos.x > 1155)
+			{
+				enemy.speed = -enemy.speed;
+			}
+			if (enemy.pos.x < 0)
+			{
+				enemy.speed = -enemy.speed;
+
 				// --- 敵の左辺の弾 ---
-		for (int i = 0; i < leftSideEnemyBullet[0].columns; ++i) {
+for (int i = 0; i < leftSideEnemyBullet[0].columns; ++i) {
 
+	if (!leftSideEnemyBullet[i].isBulletShot) {
+		leftSideEnemyBullet[i].isBulletShot = true;
+		leftSideEnemyBullet[i].length = 0.0f;
 
+		leftSideEnemyBullet[i].t = 0.0f;
+		leftSideEnemyBullet[i].easedT = 0.0f;
+	}
 
+	if (leftSideEnemyBullet[i].isBulletShot) {
 
-			if (!leftSideEnemyBullet[i].isBulletShot) {
-				leftSideEnemyBullet[i].isBulletShot = true;
-				leftSideEnemyBullet[i].length = 0.0f;
+		if (!leftSideEnemyBullet[i].interpolation) {
 
-				leftSideEnemyBullet[i].t = 0.0f;
-				leftSideEnemyBullet[i].easedT = 0.0f;
+			leftSideEnemyBullet[i].t += 0.008f;
+
+			if (leftSideEnemyBullet[i].t >= 1.0f) {
+				leftSideEnemyBullet[i].t = 1.0f;
+				leftSideEnemyBullet[i].interpolation = true;
 			}
 
-			if (leftSideEnemyBullet[i].isBulletShot) {
+			leftSideEnemyBullet[i].easedT = 1.0f - powf(1.0f - leftSideEnemyBullet[i].t, 3.0f);
 
-				if (!leftSideEnemyBullet[i].interpolation) {
+			leftSideEnemyBullet[i].pos.x = (1.0f - leftSideEnemyBullet[i].easedT) * leftSideEnemyBullet[i].start.x + leftSideEnemyBullet[i].easedT * leftSideEnemyBullet[i].end.x;
+			leftSideEnemyBullet[i].pos.y = (1.0f - leftSideEnemyBullet[i].easedT) * leftSideEnemyBullet[i].start.y + leftSideEnemyBullet[i].easedT * leftSideEnemyBullet[i].end.y;
 
-					leftSideEnemyBullet[i].t += 0.008f;
+			leftSideEnemyBullet[i].space = int((1.0f - leftSideEnemyBullet[i].easedT) * 20.0f + leftSideEnemyBullet[i].easedT * 27.0f + 0.5f);
 
-					if (leftSideEnemyBullet[i].t >= 1.0f) {
-						leftSideEnemyBullet[i].t = 1.0f;
-						leftSideEnemyBullet[i].interpolation = true;
-					}
+		} else {
 
-					leftSideEnemyBullet[i].easedT = 1.0f - powf(1.0f - leftSideEnemyBullet[i].t, 3.0f);
+			player.dir.x = player.pos.x - enemy.pos.x;
+			player.dir.y = player.pos.y - enemy.pos.y;
 
+			leftSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
 
-					leftSideEnemyBullet[i].pos.x = (1.0f - leftSideEnemyBullet[i].easedT) * leftSideEnemyBullet[i].start.x + leftSideEnemyBullet[i].easedT * leftSideEnemyBullet[i].end.x;
-					leftSideEnemyBullet[i].pos.y = (1.0f - leftSideEnemyBullet[i].easedT) * leftSideEnemyBullet[i].start.y + leftSideEnemyBullet[i].easedT * leftSideEnemyBullet[i].end.y;
+			if (leftSideEnemyBullet[i].length > 0.0f) {
+				leftSideEnemyBullet[i].velocity.x = (player.dir.x / leftSideEnemyBullet[i].length) * leftSideEnemyBullet[i].speed;
+				leftSideEnemyBullet[i].velocity.y = (player.dir.y / leftSideEnemyBullet[i].length) * leftSideEnemyBullet[i].speed;
+			}
 
-					leftSideEnemyBullet[i].space = int((1.0f - leftSideEnemyBullet[i].easedT) * 20.0f + leftSideEnemyBullet[i].easedT * 27.0f + 0.5f);
+			leftSideEnemyBullet[i].pos.x += leftSideEnemyBullet[i].velocity.x;
+			leftSideEnemyBullet[i].pos.y += leftSideEnemyBullet[i].velocity.y;
 
-				} else {
+			if (leftSideEnemyBullet[i].pos.y <= 0.0f ||
+				leftSideEnemyBullet[i].pos.x <= 0.0f ||
+				leftSideEnemyBullet[i].pos.x >= 1280.0f ||
+				leftSideEnemyBullet[i].pos.y + leftSideEnemyBullet[i].height >= 720.0f) {
 
-					player.dir.x = player.pos.x - enemy.pos.x;
-					player.dir.y = player.pos.y - enemy.pos.y;
-
-					leftSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
-
-					if (leftSideEnemyBullet[i].length > 0.0f) {
-						leftSideEnemyBullet[i].velocity.x = (player.dir.x / leftSideEnemyBullet[i].length) * leftSideEnemyBullet[i].speed;
-						leftSideEnemyBullet[i].velocity.y = (player.dir.y / leftSideEnemyBullet[i].length) * leftSideEnemyBullet[i].speed;
-					}
-
-					leftSideEnemyBullet[i].pos.x += leftSideEnemyBullet[i].velocity.x;
-					leftSideEnemyBullet[i].pos.y += leftSideEnemyBullet[i].velocity.y;
-
-					if (leftSideEnemyBullet[i].pos.y <= 0.0f ||
-						leftSideEnemyBullet[i].pos.x <= 0.0f ||
-						leftSideEnemyBullet[i].pos.x >= 1280.0f ||
-						leftSideEnemyBullet[i].pos.y + leftSideEnemyBullet[i].height >= 720.0f) {
-
-						leftSideEnemyBullet[i].pos.x = leftSideEnemyBullet[i].start.x;
-						leftSideEnemyBullet[i].pos.y = leftSideEnemyBullet[i].start.y;
-						leftSideEnemyBullet[i].isBulletShot = false;
-						leftSideEnemyBullet[i].interpolation = false;
-					}
-				}
+				leftSideEnemyBullet[i].pos.x = leftSideEnemyBullet[i].start.x;
+				leftSideEnemyBullet[i].pos.y = leftSideEnemyBullet[i].start.y;
+				leftSideEnemyBullet[i].isBulletShot = false;
+				leftSideEnemyBullet[i].interpolation = false;
 			}
 		}
+	}
+}
 
-				// --- 敵の右辺の弾 ---
-				for (int i = 0; i < rightSideEnemyBullet[0].columns; ++i) {
+// --- 敵の右辺の弾 ---
+for (int i = 0; i < rightSideEnemyBullet[0].columns; ++i) {
 
-					if (!rightSideEnemyBullet[i].isBulletShot) {
-						rightSideEnemyBullet[i].isBulletShot = true;
-						rightSideEnemyBullet[i].length = 0.0f;
+	if (!rightSideEnemyBullet[i].isBulletShot) {
+		rightSideEnemyBullet[i].isBulletShot = true;
+		rightSideEnemyBullet[i].length = 0.0f;
 
-						rightSideEnemyBullet[i].t = 0.0f;
-						rightSideEnemyBullet[i].easedT = 0.0f;
-					}
+		rightSideEnemyBullet[i].t = 0.0f;
+		rightSideEnemyBullet[i].easedT = 0.0f;
+	}
 
-					if (rightSideEnemyBullet[i].isBulletShot) {
+	if (rightSideEnemyBullet[i].isBulletShot) {
 
-						if (!rightSideEnemyBullet[i].interpolation) {
+		if (!rightSideEnemyBullet[i].interpolation) {
 
-							rightSideEnemyBullet[i].t += 0.008f;
+			rightSideEnemyBullet[i].t += 0.008f;
 
-							if (rightSideEnemyBullet[i].t >= 1.0f) {
-								rightSideEnemyBullet[i].t = 1.0f;
-								rightSideEnemyBullet[i].interpolation = true;
-							}
-
-							rightSideEnemyBullet[i].easedT = 1.0f - powf(1.0f - rightSideEnemyBullet[i].t, 3.0f);
-
-							rightSideEnemyBullet[i].pos.x = (1.0f - rightSideEnemyBullet[i].easedT) * rightSideEnemyBullet[i].start.x + rightSideEnemyBullet[i].easedT * rightSideEnemyBullet[i].end.x;
-							rightSideEnemyBullet[i].pos.y = (1.0f - rightSideEnemyBullet[i].easedT) * rightSideEnemyBullet[i].start.y + rightSideEnemyBullet[i].easedT * rightSideEnemyBullet[i].end.y;
-
-					rightSideEnemyBullet[i].space = int((1.0f - rightSideEnemyBullet[i].easedT) * 20.0f + rightSideEnemyBullet[i].easedT * 27.0f + 0.5f);
-
-						} else {
-
-							player.dir.x = player.pos.x - enemy.pos.x;
-							player.dir.y = player.pos.y - enemy.pos.y;
-
-							rightSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
-
-							if (rightSideEnemyBullet[i].length > 0.0f) {
-								rightSideEnemyBullet[i].velocity.x = (player.dir.x / rightSideEnemyBullet[i].length) * rightSideEnemyBullet[i].speed;
-								rightSideEnemyBullet[i].velocity.y = (player.dir.y / rightSideEnemyBullet[i].length) * rightSideEnemyBullet[i].speed;
-							}
-
-							rightSideEnemyBullet[i].pos.x += rightSideEnemyBullet[i].velocity.x;
-							rightSideEnemyBullet[i].pos.y += rightSideEnemyBullet[i].velocity.y;
-
-							if (rightSideEnemyBullet[i].pos.y <= 0.0f ||
-								rightSideEnemyBullet[i].pos.x <= 0.0f ||
-								rightSideEnemyBullet[i].pos.x >= 1280.0f ||
-								rightSideEnemyBullet[i].pos.y + rightSideEnemyBullet[i].height >= 720.0f) {
-
-								rightSideEnemyBullet[i].pos.x = rightSideEnemyBullet[i].start.x;
-								rightSideEnemyBullet[i].pos.y = rightSideEnemyBullet[i].start.y;
-								rightSideEnemyBullet[i].isBulletShot = false;
-								rightSideEnemyBullet[i].interpolation = false;
-							}
-						}
-					}
-				}
-
-		// --- 敵の上辺の弾 ---
-		for (int i = 0; i < topSideEnemyBullet[0].columns; ++i) {
-
-			if (!topSideEnemyBullet[i].isBulletShot) {
-				topSideEnemyBullet[i].isBulletShot = true;
-				topSideEnemyBullet[i].length = 0.0f;
-
-				topSideEnemyBullet[i].t = 0.0f;
-				topSideEnemyBullet[i].easedT = 0.0f;
+			if (rightSideEnemyBullet[i].t >= 1.0f) {
+				rightSideEnemyBullet[i].t = 1.0f;
+				rightSideEnemyBullet[i].interpolation = true;
 			}
 
-			if (topSideEnemyBullet[i].isBulletShot) {
+			rightSideEnemyBullet[i].easedT = 1.0f - powf(1.0f - rightSideEnemyBullet[i].t, 3.0f);
 
-				if (!topSideEnemyBullet[i].interpolation) {
+			rightSideEnemyBullet[i].pos.x = (1.0f - rightSideEnemyBullet[i].easedT) * rightSideEnemyBullet[i].start.x + rightSideEnemyBullet[i].easedT * rightSideEnemyBullet[i].end.x;
+			rightSideEnemyBullet[i].pos.y = (1.0f - rightSideEnemyBullet[i].easedT) * rightSideEnemyBullet[i].start.y + rightSideEnemyBullet[i].easedT * rightSideEnemyBullet[i].end.y;
 
-					topSideEnemyBullet[i].t += 0.008f;
+			rightSideEnemyBullet[i].space = int((1.0f - rightSideEnemyBullet[i].easedT) * 20.0f + rightSideEnemyBullet[i].easedT * 27.0f + 0.5f);
 
-					if (topSideEnemyBullet[i].t >= 1.0f) {
-						topSideEnemyBullet[i].t = 1.0f;
-						topSideEnemyBullet[i].interpolation = true;
-					}
+		} else {
 
-					topSideEnemyBullet[i].easedT = 1.0f - powf(1.0f - topSideEnemyBullet[i].t, 3.0f);
+			player.dir.x = player.pos.x - enemy.pos.x;
+			player.dir.y = player.pos.y - enemy.pos.y;
 
-					topSideEnemyBullet[i].pos.x = (1.0f - topSideEnemyBullet[i].easedT) * topSideEnemyBullet[i].start.x + topSideEnemyBullet[i].easedT * topSideEnemyBullet[i].end.x;
-					topSideEnemyBullet[i].pos.y = (1.0f - topSideEnemyBullet[i].easedT) * topSideEnemyBullet[i].start.y + topSideEnemyBullet[i].easedT * topSideEnemyBullet[i].end.y;
+			rightSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
 
-					
+			if (rightSideEnemyBullet[i].length > 0.0f) {
+				rightSideEnemyBullet[i].velocity.x = (player.dir.x / rightSideEnemyBullet[i].length) * rightSideEnemyBullet[i].speed;
+				rightSideEnemyBullet[i].velocity.y = (player.dir.y / rightSideEnemyBullet[i].length) * rightSideEnemyBullet[i].speed;
+			}
 
-				} else {
+			rightSideEnemyBullet[i].pos.x += rightSideEnemyBullet[i].velocity.x;
+			rightSideEnemyBullet[i].pos.y += rightSideEnemyBullet[i].velocity.y;
 
-					player.dir.x = player.pos.x - enemy.pos.x;
-					player.dir.y = player.pos.y - enemy.pos.y;
+			if (rightSideEnemyBullet[i].pos.y <= 0.0f ||
+				rightSideEnemyBullet[i].pos.x <= 0.0f ||
+				rightSideEnemyBullet[i].pos.x >= 1280.0f ||
+				rightSideEnemyBullet[i].pos.y + rightSideEnemyBullet[i].height >= 720.0f) {
 
-					topSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
-
-					if (topSideEnemyBullet[i].length > 0.0f) {
-						topSideEnemyBullet[i].velocity.x = (player.dir.x / topSideEnemyBullet[i].length) * topSideEnemyBullet[i].speed;
-						topSideEnemyBullet[i].velocity.y = (player.dir.y / topSideEnemyBullet[i].length) * topSideEnemyBullet[i].speed;
-					}
-
-					topSideEnemyBullet[i].pos.x += topSideEnemyBullet[i].velocity.x;
-					topSideEnemyBullet[i].pos.y += topSideEnemyBullet[i].velocity.y;
-
-					if (topSideEnemyBullet[i].pos.y <= 0.0f ||
-						topSideEnemyBullet[i].pos.x <= 0.0f ||
-						topSideEnemyBullet[i].pos.x >= 1280.0f ||
-						topSideEnemyBullet[i].pos.y + topSideEnemyBullet[i].height >= 720.0f) {
-
-						topSideEnemyBullet[i].pos.x = topSideEnemyBullet[i].start.x;
-						topSideEnemyBullet[i].pos.y = topSideEnemyBullet[i].start.y;
-						topSideEnemyBullet[i].isBulletShot = false;
-						topSideEnemyBullet[i].interpolation = false;
-					}
-				}
+				rightSideEnemyBullet[i].pos.x = rightSideEnemyBullet[i].start.x;
+				rightSideEnemyBullet[i].pos.y = rightSideEnemyBullet[i].start.y;
+				rightSideEnemyBullet[i].isBulletShot = false;
+				rightSideEnemyBullet[i].interpolation = false;
 			}
 		}
+	}
+}
+
+// --- 敵の上辺の弾 ---
+for (int i = 0; i < topSideEnemyBullet[0].columns; ++i) {
+
+	if (!topSideEnemyBullet[i].isBulletShot) {
+		topSideEnemyBullet[i].isBulletShot = true;
+		topSideEnemyBullet[i].length = 0.0f;
+
+		topSideEnemyBullet[i].t = 0.0f;
+		topSideEnemyBullet[i].easedT = 0.0f;
+	}
+
+	if (topSideEnemyBullet[i].isBulletShot) {
+
+		if (!topSideEnemyBullet[i].interpolation) {
+
+			topSideEnemyBullet[i].t += 0.008f;
+
+			if (topSideEnemyBullet[i].t >= 1.0f) {
+				topSideEnemyBullet[i].t = 1.0f;
+				topSideEnemyBullet[i].interpolation = true;
+			}
+
+			topSideEnemyBullet[i].easedT = 1.0f - powf(1.0f - topSideEnemyBullet[i].t, 3.0f);
+
+			topSideEnemyBullet[i].pos.x = (1.0f - topSideEnemyBullet[i].easedT) * topSideEnemyBullet[i].start.x + topSideEnemyBullet[i].easedT * topSideEnemyBullet[i].end.x;
+			topSideEnemyBullet[i].pos.y = (1.0f - topSideEnemyBullet[i].easedT) * topSideEnemyBullet[i].start.y + topSideEnemyBullet[i].easedT * topSideEnemyBullet[i].end.y;
+
+			
+
+		} else {
+
+			player.dir.x = player.pos.x - enemy.pos.x;
+			player.dir.y = player.pos.y - enemy.pos.y;
+
+			topSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+
+			if (topSideEnemyBullet[i].length > 0.0f) {
+				topSideEnemyBullet[i].velocity.x = (player.dir.x / topSideEnemyBullet[i].length) * topSideEnemyBullet[i].speed;
+				topSideEnemyBullet[i].velocity.y = (player.dir.y / topSideEnemyBullet[i].length) * topSideEnemyBullet[i].speed;
+			}
+
+			topSideEnemyBullet[i].pos.x += topSideEnemyBullet[i].velocity.x;
+			topSideEnemyBullet[i].pos.y += topSideEnemyBullet[i].velocity.y;
+
+			if (topSideEnemyBullet[i].pos.y <= 0.0f ||
+				topSideEnemyBullet[i].pos.x <= 0.0f ||
+				topSideEnemyBullet[i].pos.x >= 1280.0f ||
+				topSideEnemyBullet[i].pos.y + topSideEnemyBullet[i].height >= 720.0f) {
+
+				topSideEnemyBullet[i].pos.x = topSideEnemyBullet[i].start.x;
+				topSideEnemyBullet[i].pos.y = topSideEnemyBullet[i].start.y;
+				topSideEnemyBullet[i].isBulletShot = false;
+				topSideEnemyBullet[i].interpolation = false;
+			}
+		}
+	}
+}
+
+ 
+
+		
+
+		////////////////
+	   /////////////////
+
+							
+ 
+	   
 
 		///
 		/// ↑更新処理ここまで
@@ -464,6 +613,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			
 
 					0.0f, WHITE, kFillModeSolid);
+        
 				if (playerbullet1.isShot)
 				{
 					Novice::DrawEllipse(
@@ -473,6 +623,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						static_cast<int>(playerbullet1.radius),
 						0.0f, WHITE, kFillModeSolid);
 				}
+        
 				if (playerbullet2.isShot)
 				{
 					Novice::DrawEllipse(
@@ -492,6 +643,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				/// ↑更新処理ここまで
 				///
 
+ 
+		Novice::ScreenPrintf(0, 0, "%f", enemyTimer);
+
+
+		for (int j = 0; j < enemyBullet[0].columns; ++j) {
+			if (enemyBullet[j].isBulletShot) {
+
 				///
 				/// ↓描画処理ここから
 				///
@@ -502,6 +660,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 敵の左辺の弾
 		for (int j = 0; j < leftSideEnemyBullet[0].columns; ++j) {
 			if (leftSideEnemyBullet[j].isBulletShot) {
+ 
 				Novice::DrawBox(
 					int(leftSideEnemyBullet[j].pos.x),
 					int(leftSideEnemyBullet[j].pos.y) + j * (int(leftSideEnemyBullet[j].height) + leftSideEnemyBullet[j].space),
@@ -544,10 +703,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// 敵描画
 		Novice::DrawBox(
+ 
+			static_cast<int>(enemy.pos.x),
+			static_cast<int>(enemy.pos.y),
+			static_cast<int>(enemy.width),
+			static_cast<int>(enemy.height),
+
 			int(enemy.pos.x),
 			int(enemy.pos.y),
 			int(enemy.width),
 			int(enemy.height),
+ 
 			0.0f, WHITE,
 			kFillModeSolid
 		);
