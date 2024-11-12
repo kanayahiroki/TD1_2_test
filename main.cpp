@@ -220,6 +220,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 			}
 		}
+		if (playerbullet1.isShot == 1)
+		{
+			playerbullet1.pos.y -= playerbullet1.speed;
+
+			if (playerbullet1.pos.y < 0)
+			{
+				playerbullet1.isShot = false;
+				playerbullet1.pos.y = player.pos.x;
+
+			}
+
+
+		}
+		if (playerbullet2.isShot == 1)
+		{
+			playerbullet2.pos.y -= playerbullet2.speed;
+			if (playerbullet2.pos.y < 0)
+			{
+				playerbullet2.isShot = false;
+				playerbullet2.pos.y = player.pos.x;
+			}
+		}
 				// --- 敵の左辺の弾 ---
 		for (int i = 0; i < leftSideEnemyBullet[0].columns; ++i) {
 
