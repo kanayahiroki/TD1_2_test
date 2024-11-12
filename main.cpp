@@ -24,7 +24,7 @@ struct PlayerBullet
 	float radius;
 	float speed;
 	int isShot;
-	int type;
+	
 };
 
 
@@ -55,7 +55,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		10,
 		5,
 		false,
-		0,
+		
 	};
 	PlayerBullet playerbullet2
 	{
@@ -63,9 +63,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		10,
 		5,
 		false,
-		0,
+		
 	};
-
+	int type = 0;
 	
 
 
@@ -99,40 +99,44 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{
 			player.pos.x += player.speed;
 		}
+		
 		//玉の属性の切り替え
 		if (keys[DIK_Q])
 		{
-			playerbullet1.type = 1;
+			type = 1;
 		}
 		//玉の属性の切り替え
 		if (keys[DIK_E]) 
 		{
-			playerbullet2.type = 2;
+			type = 2;
 		}
 		if (playerbullet1.isShot == false || playerbullet2.isShot == false) {
-			if (keys[DIK_SPACE])
+			if (!keys[DIK_SPACE]&&preKeys[DIK_SPACE])
 			{
-				playerbullet1.pos.y = player.pos.x;
-				playerbullet2.pos.y = player.pos.x;
+				
 				//スペースを押したときのplayerbullet1の動き
-				if (playerbullet1.type == 1)
+				if (type == 1)
 				{
-					
+					playerbullet1.pos.x = player.pos.x;
+					playerbullet1.pos.y = player.pos.y;
 					playerbullet1.isShot = true;
 				}
 
 
 				////スペースを押したときのplayerbullet2の動き
-				if (playerbullet2.type == 2)
+				if (type == 2)
 				{
-					
+					playerbullet2.pos.x = player.pos.x + player.radius;
+					playerbullet2.pos.y = player.pos.y;
 					playerbullet2.isShot = true;
 				}
-				if (playerbullet1.isShot == 0 || playerbullet2.isShot == 0) 
+				if (type == 0) 
 				{
-					playerbullet1.pos.y = player.pos.x;
+					playerbullet1.pos.x = player.pos.x;
+					playerbullet1.pos.y = player.pos.y;
 					playerbullet1.isShot = true;
-					playerbullet2.pos.y = player.pos.x;
+					playerbullet2.pos.x = player.pos.x+player.radius;
+					playerbullet2.pos.y = player.pos.y;
 					playerbullet2.isShot = true;
 				}
 
@@ -175,7 +179,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			static_cast<int>(player.radius),
 			static_cast<int>(player.radius),
 			0.0f, WHITE, kFillModeSolid);
-		if (playerbullet1.isShot) {
+		if (playerbullet1.isShot) 
+		{
 			Novice::DrawEllipse(
 				static_cast<int>(playerbullet1.pos.x),
 				static_cast<int>(playerbullet1.pos.y),
@@ -183,7 +188,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				static_cast<int>(playerbullet1.radius),
 				0.0f, WHITE, kFillModeSolid);
 		}
-		if (playerbullet2.isShot) {
+		if (playerbullet2.isShot) 
+		{
 			Novice::DrawEllipse(
 				static_cast<int>(playerbullet2.pos.x),
 				static_cast<int>(playerbullet2.pos.y),
@@ -192,7 +198,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				0.0f, WHITE, kFillModeSolid);
 		}
 		Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
-		Novice::ScreenPrintf(20, 40, "%d", playerbullet1.isShot);
+		Novice::ScreenPrintf(20, 40, "%d", type);
 		
 		
 		
