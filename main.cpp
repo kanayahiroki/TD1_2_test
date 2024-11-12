@@ -109,6 +109,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		rightSideEnemyBullet[i].isBulletShot = false;
 	}
 
+	// 上辺
+	Bullet topSideEnemyBullet[4]{};
+	for (int i = 0; i < 4; ++i) {
+		topSideEnemyBullet[i].width = 10.0f;
+		topSideEnemyBullet[i].height = 10.0f;
+
+		topSideEnemyBullet[i].start.x = enemy.pos.x;
+		topSideEnemyBullet[i].start.y = enemy.pos.y;
+
+		topSideEnemyBullet[i].end.x = enemy.pos.x;
+		topSideEnemyBullet[i].end.y = enemy.pos.y - (topSideEnemyBullet[i].height * 2);
+
+		topSideEnemyBullet[i].pos.x = topSideEnemyBullet[i].start.x;
+		topSideEnemyBullet[i].pos.y = topSideEnemyBullet[i].start.y;
+
+		topSideEnemyBullet[i].columns = 4;
+		topSideEnemyBullet[i].space = 55;
+		topSideEnemyBullet[i].speed = 5.0f;
+		topSideEnemyBullet[i].length = 0.0f;
+		topSideEnemyBullet[i].t = 0.0f;
+		topSideEnemyBullet[i].easedT = 0.0f;
+
+		topSideEnemyBullet[i].interpolation = false;
+		topSideEnemyBullet[i].isBulletShot = false;
+	}
+
 	Player player{};
 	player.pos.x = 640.0f;
 	player.pos.y = 620.0f;
@@ -177,7 +203,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					leftSideEnemyBullet[i].pos.x = (1.0f - leftSideEnemyBullet[i].easedT) * leftSideEnemyBullet[i].start.x + leftSideEnemyBullet[i].easedT * leftSideEnemyBullet[i].end.x;
 					leftSideEnemyBullet[i].pos.y = (1.0f - leftSideEnemyBullet[i].easedT) * leftSideEnemyBullet[i].start.y + leftSideEnemyBullet[i].easedT * leftSideEnemyBullet[i].end.y;
 
-					leftSideEnemyBullet[i].space = static_cast<int>((1.0f - leftSideEnemyBullet[i].easedT) * 20 + leftSideEnemyBullet[i].easedT * 27 + 0.5f);
+					leftSideEnemyBullet[i].space = int((1.0f - leftSideEnemyBullet[i].easedT) * 20.0f + leftSideEnemyBullet[i].easedT * 27.0f + 0.5f);
 
 				} else {
 
@@ -235,7 +261,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					rightSideEnemyBullet[i].pos.x = (1.0f - rightSideEnemyBullet[i].easedT) * rightSideEnemyBullet[i].start.x + rightSideEnemyBullet[i].easedT * rightSideEnemyBullet[i].end.x;
 					rightSideEnemyBullet[i].pos.y = (1.0f - rightSideEnemyBullet[i].easedT) * rightSideEnemyBullet[i].start.y + rightSideEnemyBullet[i].easedT * rightSideEnemyBullet[i].end.y;
 
-					rightSideEnemyBullet[i].space = static_cast<int>((1.0f - rightSideEnemyBullet[i].easedT) * 20 + rightSideEnemyBullet[i].easedT * 27 + 0.5f);
+					rightSideEnemyBullet[i].space = int((1.0f - rightSideEnemyBullet[i].easedT) * 20.0f + rightSideEnemyBullet[i].easedT * 27.0f + 0.5f);
 
 				} else {
 
@@ -266,6 +292,64 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
+		// --- 敵の上辺の弾 ---
+		for (int i = 0; i < topSideEnemyBullet[0].columns; ++i) {
+
+			if (!topSideEnemyBullet[i].isBulletShot) {
+				topSideEnemyBullet[i].isBulletShot = true;
+				topSideEnemyBullet[i].length = 0.0f;
+
+				topSideEnemyBullet[i].t = 0.0f;
+				topSideEnemyBullet[i].easedT = 0.0f;
+			}
+
+			if (topSideEnemyBullet[i].isBulletShot) {
+
+				if (!topSideEnemyBullet[i].interpolation) {
+
+					topSideEnemyBullet[i].t += 0.008f;
+
+					if (topSideEnemyBullet[i].t >= 1.0f) {
+						topSideEnemyBullet[i].t = 1.0f;
+						topSideEnemyBullet[i].interpolation = true;
+					}
+
+					topSideEnemyBullet[i].easedT = 1.0f - powf(1.0f - topSideEnemyBullet[i].t, 3.0f);
+
+					topSideEnemyBullet[i].pos.x = (1.0f - topSideEnemyBullet[i].easedT) * topSideEnemyBullet[i].start.x + topSideEnemyBullet[i].easedT * topSideEnemyBullet[i].end.x;
+					topSideEnemyBullet[i].pos.y = (1.0f - topSideEnemyBullet[i].easedT) * topSideEnemyBullet[i].start.y + topSideEnemyBullet[i].easedT * topSideEnemyBullet[i].end.y;
+
+					
+
+				} else {
+
+					player.dir.x = player.pos.x - enemy.pos.x;
+					player.dir.y = player.pos.y - enemy.pos.y;
+
+					topSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+
+					if (topSideEnemyBullet[i].length > 0.0f) {
+						topSideEnemyBullet[i].velocity.x = (player.dir.x / topSideEnemyBullet[i].length) * topSideEnemyBullet[i].speed;
+						topSideEnemyBullet[i].velocity.y = (player.dir.y / topSideEnemyBullet[i].length) * topSideEnemyBullet[i].speed;
+					}
+
+					topSideEnemyBullet[i].pos.x += topSideEnemyBullet[i].velocity.x;
+					topSideEnemyBullet[i].pos.y += topSideEnemyBullet[i].velocity.y;
+
+					if (topSideEnemyBullet[i].pos.y <= 0.0f ||
+						topSideEnemyBullet[i].pos.x <= 0.0f ||
+						topSideEnemyBullet[i].pos.x >= 1280.0f ||
+						topSideEnemyBullet[i].pos.y + topSideEnemyBullet[i].height >= 720.0f) {
+
+						topSideEnemyBullet[i].pos.x = topSideEnemyBullet[i].start.x;
+						topSideEnemyBullet[i].pos.y = topSideEnemyBullet[i].start.y;
+						topSideEnemyBullet[i].isBulletShot = false;
+						topSideEnemyBullet[i].interpolation = false;
+					}
+				}
+			}
+		}
+
 		///
 		/// ↑更新処理ここまで
 		///
@@ -276,10 +360,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//platerの描画
 		Novice::DrawBox(
-			static_cast<int>(player.pos.x),
-			static_cast<int>(player.pos.y),
-			static_cast<int>(player.radius),
-			static_cast<int>(player.radius),
+			int(player.pos.x),
+			int(player.pos.y),
+			int(player.radius),
+			int(player.radius),
 			0.0f, WHITE, kFillModeSolid
 		);
 
@@ -287,10 +371,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		for (int j = 0; j < leftSideEnemyBullet[0].columns; ++j) {
 			if (leftSideEnemyBullet[j].isBulletShot) {
 				Novice::DrawBox(
-					static_cast<int>(leftSideEnemyBullet[j].pos.x),
-					static_cast<int>(leftSideEnemyBullet[j].pos.y) + j * (static_cast<int>(leftSideEnemyBullet[j].width) + leftSideEnemyBullet[j].space),
-					static_cast<int>(leftSideEnemyBullet[j].width),
-					static_cast<int>(leftSideEnemyBullet[j].height),
+					int(leftSideEnemyBullet[j].pos.x),
+					int(leftSideEnemyBullet[j].pos.y) + j * (int(leftSideEnemyBullet[j].height) + leftSideEnemyBullet[j].space),
+					int(leftSideEnemyBullet[j].width),
+					int(leftSideEnemyBullet[j].height),
 					0.0f, WHITE,
 					kFillModeSolid
 				);
@@ -301,10 +385,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		for (int j = 0; j < rightSideEnemyBullet[0].columns; ++j) {
 			if (rightSideEnemyBullet[j].isBulletShot) {
 				Novice::DrawBox(
-					static_cast<int>(rightSideEnemyBullet[j].pos.x),
-					static_cast<int>(rightSideEnemyBullet[j].pos.y) + j * (static_cast<int>(rightSideEnemyBullet[j].width) + rightSideEnemyBullet[j].space),
-					static_cast<int>(rightSideEnemyBullet[j].width),
-					static_cast<int>(rightSideEnemyBullet[j].height),
+					int(rightSideEnemyBullet[j].pos.x),
+					int(rightSideEnemyBullet[j].pos.y) + j * (int(rightSideEnemyBullet[j].height) + rightSideEnemyBullet[j].space),
+					int(rightSideEnemyBullet[j].width),
+					int(rightSideEnemyBullet[j].height),
+					0.0f, WHITE,
+					kFillModeSolid
+				);
+			}
+		}
+
+		// 敵の上辺の弾
+		for (int j = 0; j < topSideEnemyBullet[0].columns; ++j) {
+			if (topSideEnemyBullet[j].isBulletShot) {
+				Novice::DrawBox(
+					int(topSideEnemyBullet[j].pos.x) + j * (int(topSideEnemyBullet[j].width) + topSideEnemyBullet[j].space),
+					int(topSideEnemyBullet[j].pos.y),
+					int(topSideEnemyBullet[j].width),
+					int(topSideEnemyBullet[j].height),
 					0.0f, WHITE,
 					kFillModeSolid
 				);
@@ -313,10 +411,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// 敵描画
 		Novice::DrawBox(
-			static_cast<int>(enemy.pos.x),
-			static_cast<int>(enemy.pos.y),
-			static_cast<int>(enemy.width),
-			static_cast<int>(enemy.height),
+			int(enemy.pos.x),
+			int(enemy.pos.y),
+			int(enemy.width),
+			int(enemy.height),
 			0.0f, WHITE,
 			kFillModeSolid
 		);
