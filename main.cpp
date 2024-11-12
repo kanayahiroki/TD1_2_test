@@ -156,7 +156,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.radius = 40.0f;
 	player.speed = 5.0f;
 	int type = 0;
+	PlayerBullet playerbullet1
+	{
+		640,620,
+		10,
+		5,
+		false,
 
+	};
+	PlayerBullet playerbullet2
+	{
+		680,620,
+		10,
+		5,
+		false,
+
+	};
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -446,10 +461,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			int(player.radius),
 			int(player.radius),
 
-			static_cast<int>(player.pos.x),
-			static_cast<int>(player.pos.y),
-			static_cast<int>(player.radius),
-			static_cast<int>(player.radius),
+			
 
 					0.0f, WHITE, kFillModeSolid);
 				if (playerbullet1.isShot)
@@ -485,8 +497,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				///
 
 
-			0.0f, WHITE, kFillModeSolid
-		);
+			
 
 		// 敵の左辺の弾
 		for (int j = 0; j < leftSideEnemyBullet[0].columns; ++j) {
