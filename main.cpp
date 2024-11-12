@@ -37,10 +37,6 @@ struct Player
 	Vector2 dir;
 	float radius;
 	float speed;
-
-	int isShot;
-	
-
 };
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -95,32 +91,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		rightSideEnemyBullet[i].start.x = (enemy.pos.x + enemy.width) - rightSideEnemyBullet[i].width;
 		rightSideEnemyBullet[i].start.y = enemy.pos.y;
-
-
-	Player player
-	{
-		640,620,
-		40,
-		5
-	};
-	PlayerBullet playerbullet1
-	{
-		640,620,
-		10,
-		5,
-		false,
-		
-	};
-	PlayerBullet playerbullet2
-	{
-		680,620,
-		10,
-		5,
-		false,
-		
-	};
-	int type = 0;
-	
 
 		rightSideEnemyBullet[i].end.x = (enemy.pos.x + enemy.width + rightSideEnemyBullet[i].width);
 		rightSideEnemyBullet[i].end.y = (enemy.pos.y - rightSideEnemyBullet[i].height);
@@ -206,50 +176,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			player.pos.x += player.speed;
 		}
 
-		
-		//玉の属性の切り替え
-		if (keys[DIK_Q])
-		{
-			type = 1;
-		}
-		//玉の属性の切り替え
-		if (keys[DIK_E]) 
-		{
-			type = 2;
-		}
-		if (playerbullet1.isShot == false || playerbullet2.isShot == false) {
-			if (!keys[DIK_SPACE]&&preKeys[DIK_SPACE])
-			{
-				
-				//スペースを押したときのplayerbullet1の動き
-				if (type == 1)
-				{
-					playerbullet1.pos.x = player.pos.x;
-					playerbullet1.pos.y = player.pos.y;
-					playerbullet1.isShot = true;
-				}
-
-
 		// --- 敵の左辺の弾 ---
 		for (int i = 0; i < leftSideEnemyBullet[0].columns; ++i) {
-
-
-				////スペースを押したときのplayerbullet2の動き
-				if (type == 2)
-				{
-					playerbullet2.pos.x = player.pos.x + player.radius;
-					playerbullet2.pos.y = player.pos.y;
-					playerbullet2.isShot = true;
-				}
-				if (type == 0) 
-				{
-					playerbullet1.pos.x = player.pos.x;
-					playerbullet1.pos.y = player.pos.y;
-					playerbullet1.isShot = true;
-					playerbullet2.pos.x = player.pos.x+player.radius;
-					playerbullet2.pos.y = player.pos.y;
-					playerbullet2.isShot = true;
-				}
 
 			if (!leftSideEnemyBullet[i].isBulletShot) {
 				leftSideEnemyBullet[i].isBulletShot = true;
@@ -271,7 +199,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					}
 
 					leftSideEnemyBullet[i].easedT = 1.0f - powf(1.0f - leftSideEnemyBullet[i].t, 3.0f);
-
 
 					leftSideEnemyBullet[i].pos.x = (1.0f - leftSideEnemyBullet[i].easedT) * leftSideEnemyBullet[i].start.x + leftSideEnemyBullet[i].easedT * leftSideEnemyBullet[i].end.x;
 					leftSideEnemyBullet[i].pos.y = (1.0f - leftSideEnemyBullet[i].easedT) * leftSideEnemyBullet[i].start.y + leftSideEnemyBullet[i].easedT * leftSideEnemyBullet[i].end.y;
@@ -392,7 +319,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					topSideEnemyBullet[i].pos.x = (1.0f - topSideEnemyBullet[i].easedT) * topSideEnemyBullet[i].start.x + topSideEnemyBullet[i].easedT * topSideEnemyBullet[i].end.x;
 					topSideEnemyBullet[i].pos.y = (1.0f - topSideEnemyBullet[i].easedT) * topSideEnemyBullet[i].start.y + topSideEnemyBullet[i].easedT * topSideEnemyBullet[i].end.y;
 
-					
+
 
 				} else {
 
@@ -433,51 +360,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//platerの描画
 		Novice::DrawBox(
-
 			int(player.pos.x),
 			int(player.pos.y),
 			int(player.radius),
 			int(player.radius),
-
-			static_cast<int>(player.pos.x),
-			static_cast<int>(player.pos.y),
-			static_cast<int>(player.radius),
-			static_cast<int>(player.radius),
-
-			0.0f, WHITE, kFillModeSolid);
-		if (playerbullet1.isShot) 
-		{
-			Novice::DrawEllipse(
-				static_cast<int>(playerbullet1.pos.x),
-				static_cast<int>(playerbullet1.pos.y),
-				static_cast<int>(playerbullet1.radius),
-				static_cast<int>(playerbullet1.radius),
-				0.0f, WHITE, kFillModeSolid);
-		}
-		if (playerbullet2.isShot) 
-		{
-			Novice::DrawEllipse(
-				static_cast<int>(playerbullet2.pos.x),
-				static_cast<int>(playerbullet2.pos.y),
-				static_cast<int>(playerbullet2.radius),
-				static_cast<int>(playerbullet2.radius),
-				0.0f, WHITE, kFillModeSolid);
-		}
-		Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
-		Novice::ScreenPrintf(20, 40, "%d", type);
-		
-		
-		
-		
-		///
-		/// ↑更新処理ここまで
-		///
-
-		///
-		/// ↓描画処理ここから
-		///
-
-
 			0.0f, WHITE, kFillModeSolid
 		);
 
@@ -494,7 +380,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 		}
-
 
 		// 敵の右辺の弾
 		for (int j = 0; j < rightSideEnemyBullet[0].columns; ++j) {
