@@ -282,7 +282,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		//ワープ
-		if (enemyCount <20) 
+		if (enemyCount == 20)
 		{
 			enemyMove = false;
 			enemyTimer++;
@@ -350,8 +350,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		Novice::ScreenPrintf(0, 0, "%f", enemyTimer);
-		Novice::ScreenPrintf(0, 100, "%d", enemyCount);
-		Novice::ScreenPrintf(0, 200, "%d", enemyMove);
 
 		for (int j = 0; j < enemyBullet[0].columns; ++j) {
 			if (enemyBullet[j].isBulletShot) {
