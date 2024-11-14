@@ -156,25 +156,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				////スペースを押したときのplayerbullet2の動き
 				if (type == 2)
 				{
-
-
+					playerbullet2.pos.x = player.pos.x + player.radius;
+					playerbullet2.pos.y = player.pos.y;
 					playerbullet2.isShot = true;
 				}
-				if (playerbullet1.isShot == 0 || playerbullet2.isShot == 0)
+				
+
+				
+				if (type == 0)
+
+				{
 
 					playerbullet2.pos.x = player.pos.x + player.radius;
-				playerbullet2.pos.y = player.pos.y;
-				playerbullet2.isShot = true;
-			}
-			if (type == 0)
+					playerbullet2.pos.y = player.pos.y;
+					playerbullet2.isShot = true;
+					playerbullet1.pos.x = player.pos.x;
+					playerbullet1.pos.y = player.pos.y;
 
-			{
-				playerbullet1.pos.x = player.pos.x;
-				playerbullet1.pos.y = player.pos.y;
-				playerbullet1.isShot = true;
-				playerbullet2.pos.x = player.pos.x + player.radius;
-				playerbullet2.pos.y = player.pos.y;
-				playerbullet2.isShot = true;
+					playerbullet1.isShot = true;
+				}
 			}
 		}
 
@@ -189,16 +189,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			}
 		}
-
 		if (playerbullet2.isShot == 1)
 		{
 			playerbullet2.pos.y -= playerbullet2.speed;
+
 			if (playerbullet2.pos.y < 0)
 			{
 				playerbullet2.isShot = false;
 				playerbullet2.pos.y = player.pos.x;
+
 			}
 		}
+
+
 
 		///
 		/// ↑更新処理ここまで
@@ -217,24 +220,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f, WHITE, kFillModeSolid
 		);
 
-		if (playerbullet1.isShot) {
-			Novice::DrawEllipse(
-				static_cast<int>(playerbullet1.pos.x),
-				static_cast<int>(playerbullet1.pos.y),
-				static_cast<int>(playerbullet1.radius),
-				static_cast<int>(playerbullet1.radius),
-				0.0f, WHITE, kFillModeSolid);
-		}
 
-		if (playerbullet2.isShot) {
-			Novice::DrawEllipse(
-				static_cast<int>(playerbullet2.pos.x),
-				static_cast<int>(playerbullet2.pos.y),
-				static_cast<int>(playerbullet2.radius),
-				static_cast<int>(playerbullet2.radius),
-				0.0f, WHITE, kFillModeSolid);
-		}
-		
+
 		if (playerbullet1.isShot)
 		{
 			Novice::DrawEllipse(
@@ -265,8 +252,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			kFillModeSolid
 		);
 
-		Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
-		Novice::ScreenPrintf(20, 40, "%d", playerbullet1.isShot);
+
 		Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
 		Novice::ScreenPrintf(20, 40, "%d", type);
 
