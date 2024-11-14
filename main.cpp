@@ -96,7 +96,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	///////////
 
 	//最初の動き
-	float enemyMove = false;
+	int enemyMove = false;
 
 
 	//第二の動き
@@ -252,14 +252,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//敵の動き//
 		///////////
-		enemyMove = true;
+
+		if(keys[DIK_SPACE])
+		{
+			enemyCount --;
+		}
+
+		if(enemyCount>=40)
+		{
+			enemyMove = true;
+		}
+		
 
 
 		//最初の動き//
 		if (enemyMove)
 		{
 			enemy.pos.x += enemy.speed;
-			if (enemy.pos.x > 1155)
+			if (enemy.pos.x > 1280 - enemy.width)
 			{
 				enemy.speed = -enemy.speed;
 			}
@@ -272,7 +282,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		//ワープ
-		if (enemyCount == 20) 
+		if (enemyCount <20) 
 		{
 			enemyMove = false;
 			enemyTimer++;
@@ -282,23 +292,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				enemy.pos.x = static_cast<float>(sin(theta)) * amplitude + 540;
 				theta += float(M_PI) / 100.0f;
 			}
+			
 			if (enemyTimer == 200)
 			{
 				enemyWave = false;
-				enemy.pos.x = 100.0f;
-				enemy.pos.y = 500.0f;
+				enemy.pos.x = 80.0f;
+				enemy.pos.y = 600.0f;
 			}
 			if (enemyTimer == 400)
 			{
 				enemyWave = false;
-				enemy.pos.x = 800.0f;
-				enemy.pos.y = 500.0f;
+				enemy.pos.x = 1000.0f;
+				enemy.pos.y = 600.0f;
 			}
 			if (enemyTimer == 600)
 			{
 				enemyWave = false;
-				enemy.pos.x = 800.0f;
-				enemy.pos.y = 100.0f;
+				enemy.pos.x = 1000.0f;
+				enemy.pos.y = 80.0f;
+			}
+			if (enemyTimer == 800)
+			{
+				enemyWave = false;
+				enemy.pos.x = 80.0f;
+				enemy.pos.y = 80.0f;
 				enemyTimer = 0.0f;
 			}
 		}
@@ -333,7 +350,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		Novice::ScreenPrintf(0, 0, "%f", enemyTimer);
-
+		Novice::ScreenPrintf(0, 100, "%d", enemyCount);
+		Novice::ScreenPrintf(0, 200, "%d", enemyMove);
 
 		for (int j = 0; j < enemyBullet[0].columns; ++j) {
 			if (enemyBullet[j].isBulletShot) {
