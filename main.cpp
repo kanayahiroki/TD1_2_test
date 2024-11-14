@@ -33,6 +33,14 @@ struct Bullet {
 	int interpolation;
 };
 
+struct Player
+{
+	Vector2 pos;
+	Vector2 dir;
+	float radius;
+	float speed;
+};
+
 struct PlayerBullet
 {
 	Vector2 pos;
@@ -43,12 +51,22 @@ struct PlayerBullet
 
 
 };
-struct Player
+
+PlayerBullet playerbullet1
 {
-	Vector2 pos;
-	Vector2 dir;
-	float radius;
-	float speed;
+	640,620,
+	10,
+	5,
+	false,
+
+};
+
+PlayerBullet playerbullet2
+{
+	680,620,
+	10,
+	5,
+	false,
 };
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -67,6 +85,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	enemy.pos.y = 100.0f;
 	enemy.height = 100.0f;
 	enemy.width = 200.0f;
+
+	//ボスのHP
+	int enemyCount = 40;
+
+	///ふり幅///
+	float amplitude = 540.0f;//ふり幅、波の高さ（大きさ）
+	float theta = 0.0f;
+	///////////
+
+	//最初の動き
+	float enemyMove = false;
+
+	//第二の動き
+
+	//最後の動き//
+	//ウェーブの動き
+	float enemyWave = false;
+	//ワープするカウント
+	float enemyTimer = 0.0f;
+
+	Player player{};
+	player.pos.x = 640.0f;
+	player.pos.y = 620.0f;
+	player.dir.x = player.pos.x - enemy.pos.y;
+	player.dir.y = player.pos.y - enemy.pos.y;
+	player.radius = 40.0f;
+	player.speed = 5.0f;
+	int type = 0;
 
 	// --- enemyBullet初期化 ---
 	// 左辺
@@ -104,11 +150,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		rightSideEnemyBullet[i].start.x = (enemy.pos.x + enemy.width) - rightSideEnemyBullet[i].width;
 		rightSideEnemyBullet[i].start.y = enemy.pos.y;
 
-
-
-
 		rightSideEnemyBullet[i].end.x = (enemy.pos.x + enemy.width + rightSideEnemyBullet[i].width);
-
 		rightSideEnemyBullet[i].end.y = (enemy.pos.y - rightSideEnemyBullet[i].height);
 
 		rightSideEnemyBullet[i].pos.x = rightSideEnemyBullet[i].start.x;
@@ -151,70 +193,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		topSideEnemyBullet[i].isBulletShot = false;
 	}
 
-	Player player{};
-	player.pos.x = 640.0f;
-	player.pos.y = 620.0f;
-	player.dir.x = player.pos.x - enemy.pos.y;
-	player.dir.y = player.pos.y - enemy.pos.y;
-	player.radius = 40.0f;
-	player.speed = 5.0f;
-	int type = 0;
-
-	PlayerBullet playerbullet1
-	{
-		640,620,
-		10,
-		5,
-		false,
-
-	};
-	PlayerBullet playerbullet2
-	{
-		680,620,
-		10,
-		5,
-		false,
-	};
-
-	// --- enemy初期化 ---
-
-
-	//ボスのHP
-	int enemyCount = 40;
-
-	///ふり幅///
-	float amplitude = 540.0f;//ふり幅、波の高さ（大きさ）
-	float theta = 0.0f;
-	///////////
-
-	//最初の動き
-	float enemyMove = false;
-
-
-	//第二の動き
-
-
-	//最後の動き//
-	//ウェーブの動き
-	float enemyWave = false;
-	//ワープするカウント
-	float enemyTimer = 0.0f;
-	////////////////////////
-
-
-// --- enemyBullet初期化 ---
-	Bullet enemyBullet[4]{};
-
-	for (int i = 0; i < 4; ++i) {
-		enemyBullet[i].width = 20.0f;
-		enemyBullet[i].height = 20.0f;
-		enemyBullet[i].pos.x = enemy.pos.x + 8.0f;
-		enemyBullet[i].pos.y = enemy.pos.y + enemy.height;
-		enemyBullet[i].columns = 4;
-		enemyBullet[i].space = 34;
-		enemyBullet[i].speed = 1.0f;
-		enemyBullet[i].isBulletShot = false;
-	}
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -340,9 +318,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				playerbullet1.pos.y = player.pos.x;
 
 			}
-
-
 		}
+
 		if (playerbullet2.isShot == 1)
 		{
 			playerbullet2.pos.y -= playerbullet2.speed;
@@ -353,8 +330,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
+		///
+		/// ↑更新処理ここまで
+		///
 
-
+		///
+		/// ↓描画処理ここから
+		///
 
 		//platerの描画
 		Novice::DrawBox(
@@ -363,6 +345,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			static_cast<int>(player.radius),
 			static_cast<int>(player.radius),
 			0.0f, WHITE, kFillModeSolid);
+
 		if (playerbullet1.isShot) {
 			Novice::DrawEllipse(
 				static_cast<int>(playerbullet1.pos.x),
@@ -371,6 +354,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				static_cast<int>(playerbullet1.radius),
 				0.0f, WHITE, kFillModeSolid);
 		}
+
 		if (playerbullet2.isShot) {
 			Novice::DrawEllipse(
 				static_cast<int>(playerbullet2.pos.x),
@@ -379,43 +363,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				static_cast<int>(playerbullet2.radius),
 				0.0f, WHITE, kFillModeSolid);
 		}
-		Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
-		Novice::ScreenPrintf(20, 40, "%d", playerbullet1.isShot);
-
-
-
-
-
-
-
-
-
-		////////////////
-	   /////////////////
-
-
-
-
-
-		///
-		/// ↑更新処理ここまで
-		///
-
-				///
-				/// ↓描画処理ここから
-				///
-
+		
 		//platerの描画
 		Novice::DrawBox(
-
 			int(player.pos.x),
 			int(player.pos.y),
 			int(player.radius),
 			int(player.radius),
-
-
-
-			0.0f, WHITE, kFillModeSolid);
+			0.0f, WHITE, kFillModeSolid
+		);
 
 		if (playerbullet1.isShot)
 		{
@@ -436,30 +392,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				static_cast<int>(playerbullet2.radius),
 				0.0f, WHITE, kFillModeSolid);
 		}
-		Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
-		Novice::ScreenPrintf(20, 40, "%d", type);
 
-
-
-
-		///
-		/// ↑更新処理ここまで
-		///
-
-
-		Novice::ScreenPrintf(0, 0, "%f", enemyTimer);
-
-
-
-
-		///
-		/// ↓描画処理ここから
-		///
-
-
-
-
-	// 敵の左辺の弾
+	    // 敵の左辺の弾
 		for (int j = 0; j < leftSideEnemyBullet[0].columns; ++j) {
 			if (leftSideEnemyBullet[j].isBulletShot) {
 
@@ -473,7 +407,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 		}
-
 
 		// 敵の右辺の弾
 		for (int j = 0; j < rightSideEnemyBullet[0].columns; ++j) {
@@ -505,16 +438,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// 敵描画
 		Novice::DrawBox(
-
-
 			int(enemy.pos.x),
 			int(enemy.pos.y),
 			int(enemy.width),
 			int(enemy.height),
-
 			0.0f, WHITE,
 			kFillModeSolid
 		);
+
+		Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
+		Novice::ScreenPrintf(20, 40, "%d", playerbullet1.isShot);
+		Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
+		Novice::ScreenPrintf(20, 40, "%d", type);
+		Novice::ScreenPrintf(0, 0, "%f", enemyTimer);
 
 		///
 		/// ↑描画処理ここまで
