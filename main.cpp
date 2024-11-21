@@ -93,7 +93,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.dir.y = player.pos.y - enemy.pos.y;
 	player.radius = 40.0f;
 	player.speed = 5.0f;
-	int type = 0;
+	int type = 0;//玉の属性
+	int direction = 0;//プレイヤーの向き
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -110,21 +111,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (keys[DIK_W])
 		{
+			direction = 0;
 			player.pos.y -= player.speed;
 		}
 
 		if (keys[DIK_S])
 		{
+			direction = 1;
 			player.pos.y += player.speed;
 		}
 
 		if (keys[DIK_A])
 		{
+			direction = 2;
 			player.pos.x -= player.speed;
 		}
 
 		if (keys[DIK_D])
 		{
+			direction = 3;
 			player.pos.x += player.speed;
 		}
 
@@ -139,34 +144,49 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{
 			type = 2;
 		}
+		if (keys[DIK_X])
+		{
+			type = 0;
+		}
 
-		if (playerbullet1.isShot == false || playerbullet2.isShot == false) {
+		if (playerbullet1.isShot == false)
+		{
 			if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
 			{
 
 				//スペースを押したときのplayerbullet1の動き
 				if (type == 1)
 				{
+					if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
+					{
+						playerbullet1.pos.x = player.pos.x;
+						playerbullet1.pos.y = player.pos.y;
 
-					playerbullet1.pos.x = player.pos.x;
-					playerbullet1.pos.y = player.pos.y;
-
-					playerbullet1.isShot = true;
+						playerbullet1.isShot = true;
+					}
 				}
-				////スペースを押したときのplayerbullet2の動き
-				if (type == 2)
+			}
+		}
+		if (playerbullet2.isShot == false)
+		{
+			////スペースを押したときのplayerbullet2の動き
+			if (type == 2)
+			{
+				if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
 				{
 					playerbullet2.pos.x = player.pos.x + player.radius;
 					playerbullet2.pos.y = player.pos.y;
 					playerbullet2.isShot = true;
 				}
-				
+			}
 
-				
-				if (type == 0)
-
+		}
+		if (playerbullet1.isShot == false || playerbullet2.isShot == false)
+		{
+			if (type == 0)
+			{
+				if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
 				{
-
 					playerbullet2.pos.x = player.pos.x + player.radius;
 					playerbullet2.pos.y = player.pos.y;
 					playerbullet2.isShot = true;
@@ -177,6 +197,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 			}
 		}
+
 
 		if (playerbullet1.isShot == 1)
 		{
