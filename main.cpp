@@ -1,6 +1,5 @@
 #include <Novice.h>
 #include <corecrt_math.h>
-#include <corecrt_math_defines.h>
 
 const char kWindowTitle[] = "LC1D_09_カナヤ_ヒロキ_タイトル";
 
