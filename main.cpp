@@ -95,7 +95,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Initialization
 
 	// --- enemy初期化 ---
-    // 敵キャラクターの基本情報を設定
+	// 敵キャラクターの基本情報を設定
 	int enemyTexture = Novice::LoadTexture("./Resources/images/teki.png");
 
 	Enemy enemy = {};
@@ -125,7 +125,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	enemy.vertex.rightBottom.y = enemy.pos.y + enemy.height;
 
 	// --- enemyBullet初期化 ---
-	
+
 	int enemyBulletTexture = Novice::LoadTexture("./Resources/images/tekitama.png");
 
 	// 左辺の弾の初期化
@@ -354,8 +354,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 
 	// =======================
-    // 左上の弾丸初期化
-    // =======================
+	// 左上の弾丸初期化
+	// =======================
 	Bullet leftTopEnemyBullet{};
 
 	// サイズ設定
@@ -404,8 +404,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	leftTopEnemyBullet.isBulletShot = false;
 
 	// =======================
-    // 右上の弾丸初期化
-    // =======================
+	// 右上の弾丸初期化
+	// =======================
 	Bullet rightTopEnemyBullet{};
 
 	// サイズ設定
@@ -456,8 +456,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rightTopEnemyBullet.isBulletShot = false;
 
 	// =======================
-    // 左下の弾丸初期化
-    // =======================
+	// 左下の弾丸初期化
+	// =======================
 	Bullet leftBottomEnemyBullet{};
 
 	// サイズ設定
@@ -508,8 +508,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	leftBottomEnemyBullet.isBulletShot = false;
 
 	// =======================
-    // 右下の弾丸初期化
-    // =======================
+	// 右下の弾丸初期化
+	// =======================
 	Bullet rightBottomEnemyBullet{};
 
 	// サイズ設定
@@ -618,14 +618,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				leftSideEnemyBullet[i].easedT = 0.0f;
 			}
 
-		if (playerbullet1.isShot == 1)
-		{
-			playerbullet1.pos.y -= playerbullet1.speed;
+			if (leftSideEnemyBullet[i].isBulletShot) {
 
-			if (playerbullet1.pos.y < 0)
-			{
-				playerbullet1.isShot = false;
-				playerbullet1.pos.y = player.pos.x;
+				if (!leftSideEnemyBullet[i].interpolation) {
 
 					leftSideEnemyBullet[i].t += 0.008f;
 
@@ -654,6 +649,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					leftSideEnemyBullet[i].pos.x += leftSideEnemyBullet[i].velocity.x;
 					leftSideEnemyBullet[i].pos.y += leftSideEnemyBullet[i].velocity.y;
 
+
 					if (leftSideEnemyBullet[i].pos.y <= 0.0f ||
 						leftSideEnemyBullet[i].pos.x <= 0.0f ||
 						leftSideEnemyBullet[i].pos.x >= 1280.0f ||
@@ -667,6 +663,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 			}
 		}
+
 
 		// --- 敵の右辺の弾 ---
 		for (int i = 0; i < rightSideEnemyBullet[0].columns; ++i) {
@@ -723,6 +720,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 			}
 		}
+
 
 		// --- 敵の上辺の弾 ---
 		for (int i = 0; i < topSideEnemyBullet[0].columns; ++i) {
@@ -1048,6 +1046,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
+
 		// 敵
 		// 左上
 		enemy.vertex.leftTop.x = enemy.pos.x;
@@ -1251,7 +1250,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f, WHITE, kFillModeSolid
 		);
 
-	    // 敵の左辺の弾
+		// 敵の左辺の弾
 		for (int j = 0; j < leftSideEnemyBullet[0].columns; ++j) {
 			if (leftSideEnemyBullet[j].isBulletShot) {
 				Novice::DrawQuad(
@@ -1275,7 +1274,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
-		
+
 
 		// 敵の右辺の弾
 		for (int j = 0; j < rightSideEnemyBullet[0].columns; ++j) {
@@ -1324,7 +1323,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 		}
-		
+
 		// 敵の下辺の弾
 		for (int j = 0; j < bottomSideEnemyBullet[0].columns; ++j) {
 			if (bottomSideEnemyBullet[j].isBulletShot) {
@@ -1348,7 +1347,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 		}
-		
+
 		// 左上
 		if (leftTopEnemyBullet.isBulletShot) {
 			Novice::DrawQuad(
@@ -1456,12 +1455,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			enemyTexture, 0xFFFFFFFF
 		);
-
-		Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
-		Novice::ScreenPrintf(20, 40, "%d", playerbullet1.isShot);
-		Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
-		Novice::ScreenPrintf(20, 40, "%d", type);
-		Novice::ScreenPrintf(0, 0, "%f", enemyTimer);
 
 		///
 		/// ↑描画処理ここまで
