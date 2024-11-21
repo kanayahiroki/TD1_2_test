@@ -568,6 +568,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.dir.y = player.pos.y - enemy.pos.y;
 	player.radius = 40.0f;
 	player.speed = 5.0f;
+	int type = 0;//玉の属性
+	int direction = 0;//プレイヤーの向き
 
 #pragma endregion
 
@@ -588,23 +590,117 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (keys[DIK_W])
 		{
+			direction = 0;
 			player.pos.y -= player.speed;
 		}
 
 		if (keys[DIK_S])
 		{
+			direction = 1;
 			player.pos.y += player.speed;
 		}
 
 		if (keys[DIK_A])
 		{
+			direction = 2;
 			player.pos.x -= player.speed;
 		}
 
 		if (keys[DIK_D])
 		{
+			direction = 3;
 			player.pos.x += player.speed;
 		}
+
+
+		//玉の属性の切り替え
+		if (keys[DIK_Q])
+		{
+			type = 1;
+		}
+		//玉の属性の切り替え
+		if (keys[DIK_E])
+		{
+			type = 2;
+		}
+		if (keys[DIK_X])
+		{
+			type = 0;
+		}
+
+		if (playerbullet1.isShot == false)
+		{
+			if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
+			{
+
+				//スペースを押したときのplayerbullet1の動き
+				if (type == 1)
+				{
+					if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
+					{
+						playerbullet1.pos.x = player.pos.x;
+						playerbullet1.pos.y = player.pos.y;
+
+						playerbullet1.isShot = true;
+					}
+				}
+			}
+		}
+		if (playerbullet2.isShot == false)
+		{
+			////スペースを押したときのplayerbullet2の動き
+			if (type == 2)
+			{
+				if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
+				{
+					playerbullet2.pos.x = player.pos.x + player.radius;
+					playerbullet2.pos.y = player.pos.y;
+					playerbullet2.isShot = true;
+				}
+			}
+
+		}
+		if (playerbullet1.isShot == false || playerbullet2.isShot == false)
+		{
+			if (type == 0)
+			{
+				if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
+				{
+					playerbullet2.pos.x = player.pos.x + player.radius;
+					playerbullet2.pos.y = player.pos.y;
+					playerbullet2.isShot = true;
+					playerbullet1.pos.x = player.pos.x;
+					playerbullet1.pos.y = player.pos.y;
+
+					playerbullet1.isShot = true;
+				}
+			}
+		}
+
+
+		if (playerbullet1.isShot == 1)
+		{
+			playerbullet1.pos.y -= playerbullet1.speed;
+
+			if (playerbullet1.pos.y < 0)
+			{
+				playerbullet1.isShot = false;
+				playerbullet1.pos.y = player.pos.x;
+
+			}
+		}
+		if (playerbullet2.isShot == 1)
+		{
+			playerbullet2.pos.y -= playerbullet2.speed;
+
+			if (playerbullet2.pos.y < 0)
+			{
+				playerbullet2.isShot = false;
+				playerbullet2.pos.y = player.pos.x;
+
+			}
+		}
+
 
 		// --- 敵の左辺の弾 ---
 		for (int i = 0; i < leftSideEnemyBullet[0].columns; ++i) {
@@ -1248,6 +1344,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			int(player.radius),
 			0.0f, WHITE, kFillModeSolid
 		);
+
+
+
+		if (playerbullet1.isShot)
+		{
+			Novice::DrawEllipse(
+				static_cast<int>(playerbullet1.pos.x),
+				static_cast<int>(playerbullet1.pos.y),
+				static_cast<int>(playerbullet1.radius),
+				static_cast<int>(playerbullet1.radius),
+				0.0f, WHITE, kFillModeSolid);
+		}
+
+		if (playerbullet2.isShot)
+		{
+			Novice::DrawEllipse(
+				static_cast<int>(playerbullet2.pos.x),
+				static_cast<int>(playerbullet2.pos.y),
+				static_cast<int>(playerbullet2.radius),
+				static_cast<int>(playerbullet2.radius),
+				0.0f, WHITE, kFillModeSolid);
+		}
+
 
 		// 敵の左辺の弾
 		for (int j = 0; j < leftSideEnemyBullet[0].columns; ++j) {
