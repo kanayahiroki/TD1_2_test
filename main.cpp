@@ -1,5 +1,6 @@
 #include <Novice.h>
 #include <corecrt_math.h>
+#include <corecrt_math_defines.h>
 
 const char kWindowTitle[] = "LC1D_09_カナヤ_ヒロキ_タイトル";
 
@@ -571,6 +572,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int type = 0;//玉の属性
 	int direction = 0;//プレイヤーの向き
 
+
+
+	//ボスのHP
+	int enemyCount = 40;
+
+	///ふり幅///
+	float amplitude = 540.0f;//ふり幅、波の高さ（大きさ）
+	float theta = 0.0f;
+	///////////
+
+	//最初の動き
+	int enemyMove = false;
+
+
+	//第二の動き
+
+
+	//最後の動き//
+	//ウェーブの動き
+	float enemyWave = false;
+	//ワープするカウント
+	float enemyTimer = 0.0f;
+	////////////////////////
+
+
+
 #pragma endregion
 
 	// ウィンドウの×ボタンが押されるまでループ
@@ -700,6 +727,79 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			}
 		}
+
+		if (keys[DIK_SPACE])
+		{
+			enemyCount--;
+		}
+
+		if (enemyCount >= 40)
+		{
+			enemyMove = true;
+		}
+
+
+
+		//最初の動き//
+		if (enemyMove)
+		{
+			enemy.pos.x += enemy.speed;
+			if (enemy.pos.x > 1280 - enemy.width)
+			{
+				enemy.speed = -enemy.speed;
+			}
+			if (enemy.pos.x < 0)
+			{
+				enemy.speed = -enemy.speed;
+			}
+		}
+
+
+
+		//ワープ
+		if (enemyCount > 20)
+		{
+			enemyMove = false;
+			enemyTimer++;
+			if (enemyWave)
+			{
+				//波打つ動き
+				enemy.pos.x = static_cast<float>(sin(theta)) * amplitude + 540;
+				theta += float(M_PI) / 100.0f;
+			}
+
+			if (enemyTimer == 200)
+			{
+				enemyWave = false;
+				enemy.pos.x = 80.0f;
+				enemy.pos.y = 600.0f;
+			}
+			if (enemyTimer == 400)
+			{
+				enemyWave = false;
+				enemy.pos.x = 1000.0f;
+				enemy.pos.y = 600.0f;
+			}
+			if (enemyTimer == 600)
+			{
+				enemyWave = false;
+				enemy.pos.x = 1000.0f;
+				enemy.pos.y = 80.0f;
+			}
+			if (enemyTimer == 800)
+			{
+				enemyWave = false;
+				enemy.pos.x = 80.0f;
+				enemy.pos.y = 80.0f;
+				enemyTimer = 0.0f;
+			}
+		}
+
+		////////////////
+	   /////////////////
+
+
+
 
 
 		// --- 敵の左辺の弾 ---
