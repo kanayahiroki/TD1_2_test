@@ -574,9 +574,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (!leftSideEnemyBullet[i].isBulletShot) {
 				leftSideEnemyBullet[i].isBulletShot = true;
 				leftSideEnemyBullet[i].length = 0.0f;
-
 				leftSideEnemyBullet[i].t = 0.0f;
 				leftSideEnemyBullet[i].easedT = 0.0f;
+
+				player.dir.x = player.pos.x - enemy.pos.x;
+				player.dir.y = player.pos.y - enemy.pos.y;
+
+				leftSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+				if (leftSideEnemyBullet[i].length > 0.0f) {
+					leftSideEnemyBullet[i].velocity.x = (player.dir.x / leftSideEnemyBullet[i].length) * leftSideEnemyBullet[i].speed;
+					leftSideEnemyBullet[i].velocity.y = (player.dir.y / leftSideEnemyBullet[i].length) * leftSideEnemyBullet[i].speed;
+				}
 			}
 
 			if (leftSideEnemyBullet[i].isBulletShot) {
@@ -596,16 +604,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					leftSideEnemyBullet[i].pos.y = (1.0f - leftSideEnemyBullet[i].easedT) * leftSideEnemyBullet[i].start.y + leftSideEnemyBullet[i].easedT * leftSideEnemyBullet[i].end.y;
 
 				} else {
-
-					player.dir.x = player.pos.x - enemy.pos.x;
-					player.dir.y = player.pos.y - enemy.pos.y;
-
-					leftSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
-
-					if (leftSideEnemyBullet[i].length > 0.0f) {
-						leftSideEnemyBullet[i].velocity.x = (player.dir.x / leftSideEnemyBullet[i].length) * leftSideEnemyBullet[i].speed;
-						leftSideEnemyBullet[i].velocity.y = (player.dir.y / leftSideEnemyBullet[i].length) * leftSideEnemyBullet[i].speed;
-					}
 
 					leftSideEnemyBullet[i].pos.x += leftSideEnemyBullet[i].velocity.x;
 					leftSideEnemyBullet[i].pos.y += leftSideEnemyBullet[i].velocity.y;
@@ -630,9 +628,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (!rightSideEnemyBullet[i].isBulletShot) {
 				rightSideEnemyBullet[i].isBulletShot = true;
 				rightSideEnemyBullet[i].length = 0.0f;
-
 				rightSideEnemyBullet[i].t = 0.0f;
 				rightSideEnemyBullet[i].easedT = 0.0f;
+
+				player.dir.x = player.pos.x - enemy.pos.x;
+				player.dir.y = player.pos.y - enemy.pos.y;
+
+				rightSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+				if (rightSideEnemyBullet[i].length > 0.0f) {
+					rightSideEnemyBullet[i].velocity.x = (player.dir.x / rightSideEnemyBullet[i].length) * rightSideEnemyBullet[i].speed;
+					rightSideEnemyBullet[i].velocity.y = (player.dir.y / rightSideEnemyBullet[i].length) * rightSideEnemyBullet[i].speed;
+				}
 			}
 
 			if (rightSideEnemyBullet[i].isBulletShot) {
@@ -651,17 +657,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					rightSideEnemyBullet[i].pos.x = (1.0f - rightSideEnemyBullet[i].easedT) * rightSideEnemyBullet[i].start.x + rightSideEnemyBullet[i].easedT * rightSideEnemyBullet[i].end.x;
 					rightSideEnemyBullet[i].pos.y = (1.0f - rightSideEnemyBullet[i].easedT) * rightSideEnemyBullet[i].start.y + rightSideEnemyBullet[i].easedT * rightSideEnemyBullet[i].end.y;
 
-				} else {
-
-					player.dir.x = player.pos.x - enemy.pos.x;
-					player.dir.y = player.pos.y - enemy.pos.y;
-
-					rightSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
-
-					if (rightSideEnemyBullet[i].length > 0.0f) {
-						rightSideEnemyBullet[i].velocity.x = (player.dir.x / rightSideEnemyBullet[i].length) * rightSideEnemyBullet[i].speed;
-						rightSideEnemyBullet[i].velocity.y = (player.dir.y / rightSideEnemyBullet[i].length) * rightSideEnemyBullet[i].speed;
-					}
+				} else {			
 
 					rightSideEnemyBullet[i].pos.x += rightSideEnemyBullet[i].velocity.x;
 					rightSideEnemyBullet[i].pos.y += rightSideEnemyBullet[i].velocity.y;
@@ -686,9 +682,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (!topSideEnemyBullet[i].isBulletShot) {
 				topSideEnemyBullet[i].isBulletShot = true;
 				topSideEnemyBullet[i].length = 0.0f;
-
 				topSideEnemyBullet[i].t = 0.0f;
 				topSideEnemyBullet[i].easedT = 0.0f;
+
+				player.dir.x = player.pos.x - enemy.pos.x;
+				player.dir.y = player.pos.y - enemy.pos.y;
+
+				topSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+				if (topSideEnemyBullet[i].length > 0.0f) {
+					topSideEnemyBullet[i].velocity.x = (player.dir.x / topSideEnemyBullet[i].length) * topSideEnemyBullet[i].speed;
+					topSideEnemyBullet[i].velocity.y = (player.dir.y / topSideEnemyBullet[i].length) * topSideEnemyBullet[i].speed;
+				}
 			}
 
 			if (topSideEnemyBullet[i].isBulletShot) {
@@ -708,16 +712,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					topSideEnemyBullet[i].pos.y = (1.0f - topSideEnemyBullet[i].easedT) * topSideEnemyBullet[i].start.y + topSideEnemyBullet[i].easedT * topSideEnemyBullet[i].end.y;
 
 				} else {
-
-					player.dir.x = player.pos.x - enemy.pos.x;
-					player.dir.y = player.pos.y - enemy.pos.y;
-
-					topSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
-
-					if (topSideEnemyBullet[i].length > 0.0f) {
-						topSideEnemyBullet[i].velocity.x = (player.dir.x / topSideEnemyBullet[i].length) * topSideEnemyBullet[i].speed;
-						topSideEnemyBullet[i].velocity.y = (player.dir.y / topSideEnemyBullet[i].length) * topSideEnemyBullet[i].speed;
-					}
 
 					topSideEnemyBullet[i].pos.x += topSideEnemyBullet[i].velocity.x;
 					topSideEnemyBullet[i].pos.y += topSideEnemyBullet[i].velocity.y;
@@ -742,9 +736,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (!bottomSideEnemyBullet[i].isBulletShot) {
 				bottomSideEnemyBullet[i].isBulletShot = true;
 				bottomSideEnemyBullet[i].length = 0.0f;
-
 				bottomSideEnemyBullet[i].t = 0.0f;
 				bottomSideEnemyBullet[i].easedT = 0.0f;
+
+				player.dir.x = player.pos.x - enemy.pos.x;
+				player.dir.y = player.pos.y - enemy.pos.y;
+
+				bottomSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+				if (bottomSideEnemyBullet[i].length > 0.0f) {
+					bottomSideEnemyBullet[i].velocity.x = (player.dir.x / bottomSideEnemyBullet[i].length) * bottomSideEnemyBullet[i].speed;
+					bottomSideEnemyBullet[i].velocity.y = (player.dir.y / bottomSideEnemyBullet[i].length) * bottomSideEnemyBullet[i].speed;
+				}
 			}
 
 			if (bottomSideEnemyBullet[i].isBulletShot) {
@@ -764,16 +766,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					bottomSideEnemyBullet[i].pos.y = (1.0f - bottomSideEnemyBullet[i].easedT) * bottomSideEnemyBullet[i].start.y + bottomSideEnemyBullet[i].easedT * bottomSideEnemyBullet[i].end.y;
 
 				} else {
-
-					player.dir.x = player.pos.x - enemy.pos.x;
-					player.dir.y = player.pos.y - enemy.pos.y;
-
-					bottomSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
-
-					if (bottomSideEnemyBullet[i].length > 0.0f) {
-						bottomSideEnemyBullet[i].velocity.x = (player.dir.x / bottomSideEnemyBullet[i].length) * bottomSideEnemyBullet[i].speed;
-						bottomSideEnemyBullet[i].velocity.y = (player.dir.y / bottomSideEnemyBullet[i].length) * bottomSideEnemyBullet[i].speed;
-					}
 
 					bottomSideEnemyBullet[i].pos.x += bottomSideEnemyBullet[i].velocity.x;
 					bottomSideEnemyBullet[i].pos.y += bottomSideEnemyBullet[i].velocity.y;
@@ -796,9 +788,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (!leftTopEnemyBullet.isBulletShot) {
 			leftTopEnemyBullet.isBulletShot = true;
 			leftTopEnemyBullet.length = 0.0f;
-
 			leftTopEnemyBullet.t = 0.0f;
 			leftTopEnemyBullet.easedT = 0.0f;
+
+			player.dir.x = player.pos.x - enemy.pos.x;
+			player.dir.y = player.pos.y - enemy.pos.y;
+
+			leftTopEnemyBullet.length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+			if (leftTopEnemyBullet.length > 0.0f) {
+				leftTopEnemyBullet.velocity.x = (player.dir.x / leftTopEnemyBullet.length) * leftTopEnemyBullet.speed;
+				leftTopEnemyBullet.velocity.y = (player.dir.y / leftTopEnemyBullet.length) * leftTopEnemyBullet.speed;
+			}
 		}
 
 		if (leftTopEnemyBullet.isBulletShot) {
@@ -818,16 +818,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				leftTopEnemyBullet.pos.y = (1.0f - leftTopEnemyBullet.easedT) * leftTopEnemyBullet.start.y + leftTopEnemyBullet.easedT * leftTopEnemyBullet.end.y;
 
 			} else {
-
-				player.dir.x = player.pos.x - enemy.pos.x;
-				player.dir.y = player.pos.y - enemy.pos.y;
-
-				leftTopEnemyBullet.length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
-
-				if (leftTopEnemyBullet.length > 0.0f) {
-					leftTopEnemyBullet.velocity.x = (player.dir.x / leftTopEnemyBullet.length) * leftTopEnemyBullet.speed;
-					leftTopEnemyBullet.velocity.y = (player.dir.y / leftTopEnemyBullet.length) * leftTopEnemyBullet.speed;
-				}
 
 				leftTopEnemyBullet.pos.x += leftTopEnemyBullet.velocity.x;
 				leftTopEnemyBullet.pos.y += leftTopEnemyBullet.velocity.y;
@@ -849,9 +839,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (!rightTopEnemyBullet.isBulletShot) {
 			rightTopEnemyBullet.isBulletShot = true;
 			rightTopEnemyBullet.length = 0.0f;
-
 			rightTopEnemyBullet.t = 0.0f;
 			rightTopEnemyBullet.easedT = 0.0f;
+
+			player.dir.x = player.pos.x - enemy.pos.x;
+			player.dir.y = player.pos.y - enemy.pos.y;
+
+			rightTopEnemyBullet.length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+			if (rightTopEnemyBullet.length > 0.0f) {
+				rightTopEnemyBullet.velocity.x = (player.dir.x / rightTopEnemyBullet.length) * rightTopEnemyBullet.speed;
+				rightTopEnemyBullet.velocity.y = (player.dir.y / rightTopEnemyBullet.length) * rightTopEnemyBullet.speed;
+			}
 		}
 
 		if (rightTopEnemyBullet.isBulletShot) {
@@ -871,16 +869,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				rightTopEnemyBullet.pos.y = (1.0f - rightTopEnemyBullet.easedT) * rightTopEnemyBullet.start.y + rightTopEnemyBullet.easedT * rightTopEnemyBullet.end.y;
 
 			} else {
-
-				player.dir.x = player.pos.x - enemy.pos.x;
-				player.dir.y = player.pos.y - enemy.pos.y;
-
-				rightTopEnemyBullet.length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
-
-				if (rightTopEnemyBullet.length > 0.0f) {
-					rightTopEnemyBullet.velocity.x = (player.dir.x / rightTopEnemyBullet.length) * rightTopEnemyBullet.speed;
-					rightTopEnemyBullet.velocity.y = (player.dir.y / rightTopEnemyBullet.length) * rightTopEnemyBullet.speed;
-				}
 
 				rightTopEnemyBullet.pos.x += rightTopEnemyBullet.velocity.x;
 				rightTopEnemyBullet.pos.y += rightTopEnemyBullet.velocity.y;
@@ -902,9 +890,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (!leftBottomEnemyBullet.isBulletShot) {
 			leftBottomEnemyBullet.isBulletShot = true;
 			leftBottomEnemyBullet.length = 0.0f;
-
 			leftBottomEnemyBullet.t = 0.0f;
 			leftBottomEnemyBullet.easedT = 0.0f;
+
+			player.dir.x = player.pos.x - enemy.pos.x;
+			player.dir.y = player.pos.y - enemy.pos.y;
+
+			leftBottomEnemyBullet.length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+			if (leftBottomEnemyBullet.length > 0.0f) {
+				leftBottomEnemyBullet.velocity.x = (player.dir.x / leftBottomEnemyBullet.length) * leftBottomEnemyBullet.speed;
+				leftBottomEnemyBullet.velocity.y = (player.dir.y / leftBottomEnemyBullet.length) * leftBottomEnemyBullet.speed;
+			}
 		}
 
 		if (leftBottomEnemyBullet.isBulletShot) {
@@ -924,16 +920,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				leftBottomEnemyBullet.pos.y = (1.0f - leftBottomEnemyBullet.easedT) * leftBottomEnemyBullet.start.y + leftBottomEnemyBullet.easedT * leftBottomEnemyBullet.end.y;
 
 			} else {
-
-				player.dir.x = player.pos.x - enemy.pos.x;
-				player.dir.y = player.pos.y - enemy.pos.y;
-
-				leftBottomEnemyBullet.length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
-
-				if (leftBottomEnemyBullet.length > 0.0f) {
-					leftBottomEnemyBullet.velocity.x = (player.dir.x / leftBottomEnemyBullet.length) * leftBottomEnemyBullet.speed;
-					leftBottomEnemyBullet.velocity.y = (player.dir.y / leftBottomEnemyBullet.length) * leftBottomEnemyBullet.speed;
-				}
 
 				leftBottomEnemyBullet.pos.x += leftBottomEnemyBullet.velocity.x;
 				leftBottomEnemyBullet.pos.y += leftBottomEnemyBullet.velocity.y;
@@ -955,9 +941,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (!rightBottomEnemyBullet.isBulletShot) {
 			rightBottomEnemyBullet.isBulletShot = true;
 			rightBottomEnemyBullet.length = 0.0f;
-
 			rightBottomEnemyBullet.t = 0.0f;
 			rightBottomEnemyBullet.easedT = 0.0f;
+
+			player.dir.x = player.pos.x - enemy.pos.x;
+			player.dir.y = player.pos.y - enemy.pos.y;
+
+			rightBottomEnemyBullet.length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+			if (rightBottomEnemyBullet.length > 0.0f) {
+				rightBottomEnemyBullet.velocity.x = (player.dir.x / rightBottomEnemyBullet.length) * rightBottomEnemyBullet.speed;
+				rightBottomEnemyBullet.velocity.y = (player.dir.y / rightBottomEnemyBullet.length) * rightBottomEnemyBullet.speed;
+			}
 		}
 
 		if (rightBottomEnemyBullet.isBulletShot) {
@@ -977,16 +971,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				rightBottomEnemyBullet.pos.y = (1.0f - rightBottomEnemyBullet.easedT) * rightBottomEnemyBullet.start.y + rightBottomEnemyBullet.easedT * rightBottomEnemyBullet.end.y;
 
 			} else {
-
-				player.dir.x = player.pos.x - enemy.pos.x;
-				player.dir.y = player.pos.y - enemy.pos.y;
-
-				rightBottomEnemyBullet.length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
-
-				if (rightBottomEnemyBullet.length > 0.0f) {
-					rightBottomEnemyBullet.velocity.x = (player.dir.x / rightBottomEnemyBullet.length) * rightBottomEnemyBullet.speed;
-					rightBottomEnemyBullet.velocity.y = (player.dir.y / rightBottomEnemyBullet.length) * rightBottomEnemyBullet.speed;
-				}
 
 				rightBottomEnemyBullet.pos.x += rightBottomEnemyBullet.velocity.x;
 				rightBottomEnemyBullet.pos.y += rightBottomEnemyBullet.velocity.y;
