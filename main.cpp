@@ -596,7 +596,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	float enemyTimer = 0.0f;
 	////////////////////////
 
-
+	int haikeiTexture = Novice::LoadTexture("./Resources/images/haikei.png");
+	int rightHandTexture = Novice::LoadTexture("./Resources/images/righthand.png");
+	int leftHandTexture = Novice::LoadTexture("./Resources/images/lefthand.png");
+	int psychicTexture = Novice::LoadTexture("./Resources/images/psychic.png");
 
 #pragma endregion
 
@@ -1436,35 +1439,43 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		//platerの描画
-		Novice::DrawBox(
-			int(player.pos.x),
-			int(player.pos.y),
-			int(player.radius),
-			int(player.radius),
-			0.0f, WHITE, kFillModeSolid
+		// 背景
+		Novice::DrawSprite(
+			0, 0,
+			haikeiTexture,
+			1, 1,
+			0.0f, 0xFFFFFFFF
 		);
 
-
+		//platerの描画
+		Novice::DrawSprite(
+			int(player.pos.x),
+			int(player.pos.y),
+			psychicTexture,
+			1, 1,
+			0.0f, 0xFFFFFFFF
+		);
 
 		if (playerbullet1.isShot)
 		{
-			Novice::DrawEllipse(
-				static_cast<int>(playerbullet1.pos.x),
-				static_cast<int>(playerbullet1.pos.y),
-				static_cast<int>(playerbullet1.radius),
-				static_cast<int>(playerbullet1.radius),
-				0.0f, WHITE, kFillModeSolid);
+			Novice::DrawSprite(
+				int(playerbullet1.pos.x),
+				int(playerbullet1.pos.y),
+				rightHandTexture,
+				1, 1,
+				0.0f, 0xFFFFFFFF
+			);
 		}
 
 		if (playerbullet2.isShot)
 		{
-			Novice::DrawEllipse(
-				static_cast<int>(playerbullet2.pos.x),
-				static_cast<int>(playerbullet2.pos.y),
-				static_cast<int>(playerbullet2.radius),
-				static_cast<int>(playerbullet2.radius),
-				0.0f, WHITE, kFillModeSolid);
+			Novice::DrawSprite(
+				int(playerbullet2.pos.x),
+				int(playerbullet2.pos.y),
+				leftHandTexture,
+				1, 1,
+				0.0f, 0xFFFFFFFF
+			);
 		}
 
 
