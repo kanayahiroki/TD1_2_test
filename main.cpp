@@ -86,28 +86,40 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	enemy.height = 100.0f;
 	enemy.width = 200.0f;
 	enemy.speed = 8.0f;
-
 	//ボスのHP
 	int enemyCount = 40;
-
 	///ふり幅///
 	float amplitude = 540.0f;//ふり幅、波の高さ（大きさ）
 	float theta = 0.0f;
-	///////////
+	//// 敵の動き////////
 
 	//最初の動き
 	int enemyMove = false;
 
 
 	//第二の動き
-
+	//動いてるかイージング
+	int enemyMoveFlag = 0;
 
 	//最後の動き//
 	//ウェーブの動き
 	float enemyWave = false;
 	//ワープするカウント
 	float enemyTimer = 0.0f;
+
+	
+	//float t = 0.0f;
+
 	////////////////////////
+
+	//敵の移動のためのブロック
+	Enemy enemyBox = 
+	{
+	1000.0f,
+	600.0f,
+	200.0f,
+	100.0f,
+	};
 
 
 // --- enemyBullet初期化 ---
@@ -263,8 +275,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			enemyMove = true;
 		}
 		
-
-
 		//最初の動き//
 		if (enemyMove)
 		{
@@ -279,11 +289,40 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
+		//第二の動き
+		/*if(enemyCount <20)
+		{
+			enemyMove = false;
+			enemyMoveFlag = true;
+		}
+		if (enemyMoveFlag)
+		{
+			t += 1.0f / 120.0f;
+			if (1.0f < t)
+			{
+				t = 1.0f;
+			}
+			enemy.pos.x = (1.0f - t) * enemy.pos.x + 80.0f;
+			enemy.pos.y = (1.0f - t) * enemy.pos.y + 80.0f;
+		}*/
+		//if( enemy.pos.x = 80. && enemy.pos.y = 80.0f )
+		
+
+
+
+
+
+
+
+
+
 
 
 		//ワープ
-		if (enemyCount> 20)
+		
+		if (enemyCount<0)
 		{
+			enemyMoveFlag = false;
 			enemyMove = false;
 			enemyTimer++;
 			if (enemyWave)
@@ -296,32 +335,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (enemyTimer == 200)
 			{
 				enemyWave = false;
+				//左下
 				enemy.pos.x = 80.0f;
 				enemy.pos.y = 600.0f;
 			}
-			if (enemyTimer == 400)
+			if (enemyTimer == 500)
 			{
 				enemyWave = false;
+				//右下
 				enemy.pos.x = 1000.0f;
 				enemy.pos.y = 600.0f;
-			}
-			if (enemyTimer == 600)
-			{
-				enemyWave = false;
-				enemy.pos.x = 1000.0f;
-				enemy.pos.y = 80.0f;
 			}
 			if (enemyTimer == 800)
 			{
 				enemyWave = false;
+				//右上
+				enemy.pos.x = 1000.0f;
+				enemy.pos.y = 80.0f;
+			}
+			if (enemyTimer == 1100)
+			{
+				enemyWave = false;
+				//左上
 				enemy.pos.x = 80.0f;
 				enemy.pos.y = 80.0f;
 				enemyTimer = 0.0f;
 			}
 		}
+		
 
-		////////////////
-	   /////////////////
+		////////////////////////////////////
+	   ////////////////////////////////////
 
 
 	   // --- 敵の弾 ---
@@ -371,6 +415,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			static_cast<int>(enemy.pos.y),
 			static_cast<int>(enemy.width),
 			static_cast<int>(enemy.height),
+			0.0f, WHITE,
+			kFillModeSolid
+		);
+		//敵移動ブロック
+		Novice::DrawBox(
+			static_cast<int>(enemyBox.pos.x),
+			static_cast<int>(enemyBox.pos.y),
+			static_cast<int>(enemyBox.width),
+			static_cast<int>(enemyBox.height),
 			0.0f, WHITE,
 			kFillModeSolid
 		);
