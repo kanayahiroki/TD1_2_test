@@ -770,13 +770,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			{
 				enemyWave = false;
 				enemy.pos.x = 80.0f;
-				enemy.pos.y = 600.0f;
+				enemy.pos.y = 500.0f;
 			}
 			if (enemyTimer == 400)
 			{
 				enemyWave = false;
 				enemy.pos.x = 1000.0f;
-				enemy.pos.y = 600.0f;
+				enemy.pos.y = 500.0f;
 			}
 			if (enemyTimer == 600)
 			{
