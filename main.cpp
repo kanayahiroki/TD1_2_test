@@ -19,14 +19,10 @@ struct Vertex {
 struct Enemy {
 	Vector2 pos;
 	Vector2 src;
-	Vector2 HpPos;
 	Vertex vertex;
 	float width;
 	float height;
-	float hpWidth;
-	float hpHeight;
 	float speed;
-	int hpCount;
 	int frameCount;
 	int frameCounter;
 };
@@ -123,11 +119,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	enemy.vertex.rightBottom.x = enemy.pos.x + enemy.width;
 	enemy.vertex.rightBottom.y = enemy.pos.y + enemy.height;
 
-	enemy.HpPos.x = 0.0f;
-	enemy.HpPos.y = 0.0f;
-	enemy.hpWidth = 40.0f;
-	enemy.hpHeight = 100.0f;
-	enemy.hpCount = 0;
 
 	// --- enemyBullet初期化 ---
 	int enemyBulletTexture = Novice::LoadTexture("./Resources/images/tekitama.png");
@@ -189,6 +180,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		leftSideEnemyBullet[i].t = 0.0f;      // 時間補間
 		leftSideEnemyBullet[i].easedT = 0.0f; // 補間値
 
+		leftSideEnemyBullet[i].damage = 5;
+
 		leftSideEnemyBullet[i].interpolation = false;  // 補間処理のフラグ
 		leftSideEnemyBullet[i].isBulletShot = false;   // 発射中フラグ
 		leftSideEnemyBullet[i].isHitX = false;
@@ -248,6 +241,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		rightSideEnemyBullet[i].t = 0.0f;
 		rightSideEnemyBullet[i].easedT = 0.0f;
 
+		rightSideEnemyBullet[i].damage = 5;
+
 		// フラグの初期化
 		rightSideEnemyBullet[i].interpolation = false;
 		rightSideEnemyBullet[i].isBulletShot = false;
@@ -304,6 +299,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		topSideEnemyBullet[i].length = 0.0f;
 		topSideEnemyBullet[i].t = 0.0f;
 		topSideEnemyBullet[i].easedT = 0.0f;
+		topSideEnemyBullet[i].damage = 5;
 
 		// フラグの初期化
 		topSideEnemyBullet[i].interpolation = false;
@@ -359,6 +355,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		bottomSideEnemyBullet[i].length = 0.0f;
 		bottomSideEnemyBullet[i].t = 0.0f;
 		bottomSideEnemyBullet[i].easedT = 0.0f;
+		bottomSideEnemyBullet[i].damage = 5;
 
 		// フラグの初期化
 		bottomSideEnemyBullet[i].interpolation = false;
@@ -413,6 +410,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	leftTopEnemyBullet.length = 0.0f;
 	leftTopEnemyBullet.t = 0.0f;
 	leftTopEnemyBullet.easedT = 0.0f;
+	leftTopEnemyBullet.damage = 5;
 
 	// フラグの初期化
 	leftTopEnemyBullet.interpolation = false;
@@ -468,6 +466,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rightTopEnemyBullet.length = 0.0f;
 	rightTopEnemyBullet.t = 0.0f;
 	rightTopEnemyBullet.easedT = 0.0f;
+	rightTopEnemyBullet.damage = 5;
 
 	// フラグの初期化
 	rightTopEnemyBullet.interpolation = false;
@@ -523,6 +522,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	leftBottomEnemyBullet.length = 0.0f;
 	leftBottomEnemyBullet.t = 0.0f;
 	leftBottomEnemyBullet.easedT = 0.0f;
+	leftBottomEnemyBullet.damage = 5;
 
 	// フラグの初期化
 	leftBottomEnemyBullet.interpolation = false;
@@ -579,6 +579,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rightBottomEnemyBullet.length = 0.0f;
 	rightBottomEnemyBullet.t = 0.0f;
 	rightBottomEnemyBullet.easedT = 0.0f;
+	rightBottomEnemyBullet.damage = 5;
 
 	// フラグの初期化
 	rightBottomEnemyBullet.interpolation = false;
@@ -613,6 +614,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.dir.y = player.pos.y - enemy.pos.y;
 	player.radius = 40.0f;
 	player.speed = 5.0f;
+	
 
 	int type = 0;//玉の属性
 	int direction = 0;//プレイヤーの向き
@@ -1655,6 +1657,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				leftSideEnemyBullet[i].pos.x = leftSideEnemyBullet[i].start.x;
 				leftSideEnemyBullet[i].pos.y = leftSideEnemyBullet[i].start.y;
 
+				
+
 				leftSideEnemyBullet[i].isBulletShot = false;
 				leftSideEnemyBullet[i].interpolation = false;
 
@@ -1694,6 +1698,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				rightSideEnemyBullet[i].pos.x = rightSideEnemyBullet[i].start.x;
 				rightSideEnemyBullet[i].pos.y = rightSideEnemyBullet[i].start.y;
 
+				
+
 				rightSideEnemyBullet[i].isBulletShot = false;
 				rightSideEnemyBullet[i].interpolation = false;
 			} else {
@@ -1731,6 +1737,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				// 弾の現在座標
 				topSideEnemyBullet[i].pos.x = topSideEnemyBullet[i].start.x;
 				topSideEnemyBullet[i].pos.y = topSideEnemyBullet[i].start.y;
+
+				
 
 				topSideEnemyBullet[i].isBulletShot = false;
 				topSideEnemyBullet[i].interpolation = false;
@@ -1771,6 +1779,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				bottomSideEnemyBullet[i].pos.x = bottomSideEnemyBullet[i].start.x;
 				bottomSideEnemyBullet[i].pos.y = bottomSideEnemyBullet[i].start.y;
 
+				
+
 				bottomSideEnemyBullet[i].isBulletShot = false;
 				bottomSideEnemyBullet[i].interpolation = false;
 			} else {
@@ -1807,6 +1817,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			leftTopEnemyBullet.pos.x = leftTopEnemyBullet.start.x;
 			leftTopEnemyBullet.pos.y = leftTopEnemyBullet.start.y;
 
+			
+
 			leftTopEnemyBullet.isBulletShot = false;
 			leftTopEnemyBullet.interpolation = false;
 		} else {
@@ -1842,6 +1854,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			rightTopEnemyBullet.pos.x = rightTopEnemyBullet.start.x;
 			rightTopEnemyBullet.pos.y = rightTopEnemyBullet.start.y;
 
+			
+
 			rightTopEnemyBullet.isBulletShot = false;
 			rightTopEnemyBullet.interpolation = false;
 		} else {
@@ -1876,6 +1890,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// 現在座標の初期化
 			leftBottomEnemyBullet.pos.x = leftBottomEnemyBullet.start.x;
 			leftBottomEnemyBullet.pos.y = leftBottomEnemyBullet.start.y;
+
+			
 
 			leftBottomEnemyBullet.isBulletShot = false;
 			leftBottomEnemyBullet.interpolation = false;
@@ -1913,6 +1929,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			rightBottomEnemyBullet.pos.x = rightBottomEnemyBullet.start.x;
 			rightBottomEnemyBullet.pos.y = rightBottomEnemyBullet.start.y;
 
+			
+
 			rightBottomEnemyBullet.isBulletShot = false;
 			rightBottomEnemyBullet.interpolation = false;
 			
@@ -1938,7 +1956,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			
 			playerbullet1.isHit = true;
 			playerbullet1.isShot = false;
-			enemy.hpCount = enemy.hpCount + playerbullet1.damage;
+
+			
+
 			playerbullet1.pos.y = player.pos.x;
 			
 		} else {
@@ -1962,7 +1982,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			playerbullet2.isHit = true;
 			playerbullet2.isShot = false;
-			enemy.hpCount = enemy.hpCount + playerbullet2.damage;
+
+			
+
 			playerbullet2.pos.y = player.pos.x;
 			
 		} else {
@@ -1999,14 +2021,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			0.0f, 0xFFFFFFFF
 		);
 
-		Novice::DrawBox(
-			int(enemy.HpPos.x),
-			int(enemy.HpPos.y),
-			int(enemy.hpWidth),
-			int(enemy.hpHeight - enemy.hpCount),
-			0.0f, 0xFF0000FF,
-			kFillModeSolid
-		);
+		
 
 		//platerの描画
 		Novice::DrawSprite(
@@ -2246,8 +2261,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			enemyTexture, 0xFFFFFFFF
 		);
 
-		Novice::ScreenPrintf(10, 200, "%d", enemy.hpCount);
-
+		
 		///
 		/// ↑描画処理ここまで
 		///
