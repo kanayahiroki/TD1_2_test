@@ -117,8 +117,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ワープするカウント
 	float enemyTimer = 0.0f;
 
-	
-	//float t = 0.0f;
+	////タイトルBGM/////
+	int TitleBGM = Novice::LoadAudio("./Resources/Sounds/title.mp3");
+
+
+	//////操作説明////////
+	int SousaBGM = Novice::LoadAudio("./Resources/Sounds/sousa.mp3");
+
+
+
+	////バトルBGM/////
+	int BoseBGM = Novice::LoadAudio("./Resources/Sounds/bose.mp3");
+
+	//BGMの変数
+	int playHandle = -1;
+
+
+
 
 	////////////////////////
 
@@ -166,12 +181,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{
 		case TITLE:
 
-			if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
+			if (!Novice::IsPlayingAudio(playHandle)) //サウンドが再生されているか
 			{
-			
-				enemyCount = 40;
+				playHandle = Novice::PlayAudio(TitleBGM, false, 1.0f);//サウンドを再生する
+			}
 
+
+
+
+
+			if (!keys[DIK_SPACE] && preKeys[DIK_SPACE] == 0)
+			{
 				scene = OPENE;
+				enemyCount = 40;
+				Novice::StopAudio(playHandle);//サウンドが停止される
 			}
 			Novice::ScreenPrintf(500, 500, "title");
 
@@ -180,16 +203,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			break;
 
 		case OPENE:
+			if (!Novice::IsPlayingAudio(playHandle))//サウンドが再生されているか
+			{
+				playHandle = Novice::PlayAudio(SousaBGM, false, 1.0f);//サウンドを再生する
 
-			if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
+			}
+
+			if (!keys[DIK_SPACE] && preKeys[DIK_SPACE] == 0)
 			{
 				scene = GAME;
+				Novice::StopAudio(playHandle);//サウンドが停止される
 			}
 			Novice::ScreenPrintf(500, 500, "opene");
 
 			break;
 
 		case GAME:
+			if (!Novice::IsPlayingAudio(playHandle)) //サウンドが再生されているか
+			{
+				playHandle = Novice::PlayAudio(BoseBGM, false, 1.0f);//サウンドを再生する
+			}
 			Novice::ScreenPrintf(500, 500, "game");
 
 			if (keys[DIK_W])
