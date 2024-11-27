@@ -1,5 +1,6 @@
 #include <Novice.h>
 #include <corecrt_math.h>
+#include <corecrt_math_defines.h>
 
 const char kWindowTitle[] = "LC1D_09_カナヤ_ヒロキ_タイトル";
 
@@ -19,10 +20,11 @@ struct Enemy {
 	Vector2 pos;
 	Vector2 src;
 	Vertex vertex;
-	int frameCount;
-	int frameCounter;
 	float width;
 	float height;
+	float speed;
+	int frameCount;
+	int frameCounter;
 };
 
 struct Bullet {
@@ -42,13 +44,20 @@ struct Bullet {
 	int space;
 	int isBulletShot;
 	int interpolation;
+	int isHitX;
+	int isHitY;
+	int isHit;
+	int damage;
 };
 
 struct Player
 {
+	Vertex vertex;
 	Vector2 pos;
 	Vector2 dir;
 	float radius;
+	float width;
+	float height;
 	float speed;
 };
 
@@ -64,8 +73,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Initialization
 
-	// --- enemy初期化 ---
-    // 敵キャラクターの基本情報を設定
+#pragma region --- enemy初期化 ---
+
+	// 敵キャラクターの基本情報を設定
 	int enemyTexture = Novice::LoadTexture("./Resources/images/teki.png");
 
 	Enemy enemy = {};
@@ -95,231 +105,491 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	enemy.vertex.rightBottom.x = enemy.pos.x + enemy.width;
 	enemy.vertex.rightBottom.y = enemy.pos.y + enemy.height;
 
-	// --- enemyBullet初期化 ---
-	
+#pragma endregion
+
+#pragma region === enemyBulletの初期化 ===
+
 	int enemyBulletTexture = Novice::LoadTexture("./Resources/images/tekitama.png");
 
-	// 左辺の弾の初期化
-	Bullet leftSideEnemyBullet[2]{};
-	for (int i = 0; i < 2; ++i) {
-		// 弾の基本情報
-		leftSideEnemyBullet[i].width = 20.0f;  // 弾の幅
-		leftSideEnemyBullet[i].height = 20.0f; // 弾の高さ
+	//====================================
+#pragma region --- 左辺の弾の初期化 ---
 
-		// 弾の開始位置（敵の左辺）
-		leftSideEnemyBullet[i].start.x = enemy.pos.x;
-		leftSideEnemyBullet[i].start.y = enemy.pos.y + (leftSideEnemyBullet[i].height * 1.2f);
+	Bullet leftSideEnemyBullet1{};
+	Bullet leftSideEnemyBullet2{};
 
-		// 弾の終了位置（左方向への移動を設定）
-		leftSideEnemyBullet[i].end.x = enemy.pos.x - (leftSideEnemyBullet[i].width * 2.0f);
-		leftSideEnemyBullet[i].end.y = enemy.pos.y + (leftSideEnemyBullet[i].height * 1.2f);
+#pragma region --- 弾1の基本情報 ---
 
-		// 弾の初期位置を設定
-		leftSideEnemyBullet[i].pos.x = leftSideEnemyBullet[i].start.x;
-		leftSideEnemyBullet[i].pos.y = leftSideEnemyBullet[i].start.y;
+	// 弾の幅と高さ
+	leftSideEnemyBullet1.width = 20.0f;  // 弾の幅
+	leftSideEnemyBullet1.height = 20.0f; // 弾の高さ
+
+	// 弾の開始位置（敵の左辺）
+	leftSideEnemyBullet1.start.x = enemy.pos.x;
+	leftSideEnemyBullet1.start.y = enemy.pos.y + (leftSideEnemyBullet1.height * 1.2f);
+
+	// 弾の終了位置（左方向への移動を設定）
+	leftSideEnemyBullet1.end.x = enemy.pos.x - (leftSideEnemyBullet1.width * 2.0f);
+	leftSideEnemyBullet1.end.y = enemy.pos.y + (leftSideEnemyBullet1.height * 1.2f);
+
+	// 弾の初期位置を設定
+	leftSideEnemyBullet1.pos.x = leftSideEnemyBullet1.start.x;
+	leftSideEnemyBullet1.pos.y = leftSideEnemyBullet1.start.y;
+
+	// 弾の速度や補間処理フラグなど
+	leftSideEnemyBullet1.speed = 5.0f;
+	leftSideEnemyBullet1.length = 0.0f;
+	leftSideEnemyBullet1.t = 0.0f;
+	leftSideEnemyBullet1.easedT = 0.0f;
+
+	// --- 頂点座標の初期化 ---
+	// 左上
+	leftSideEnemyBullet1.vertex.leftTop.x = leftSideEnemyBullet1.pos.x;
+	leftSideEnemyBullet1.vertex.leftTop.y = leftSideEnemyBullet1.pos.y;
+
+	// 右上
+	leftSideEnemyBullet1.vertex.rightTop.x = leftSideEnemyBullet1.pos.x + leftSideEnemyBullet1.width;
+	leftSideEnemyBullet1.vertex.rightTop.y = leftSideEnemyBullet1.pos.y;
+
+	// 左下
+	leftSideEnemyBullet1.vertex.leftBottom.x = leftSideEnemyBullet1.pos.x;
+	leftSideEnemyBullet1.vertex.leftBottom.y = leftSideEnemyBullet1.pos.y + leftSideEnemyBullet1.height;
+
+	// 右下
+	leftSideEnemyBullet1.vertex.rightBottom.x = leftSideEnemyBullet1.pos.x + leftSideEnemyBullet1.width;
+	leftSideEnemyBullet1.vertex.rightBottom.y = leftSideEnemyBullet1.pos.y + leftSideEnemyBullet1.height;
+
+	// テクスチャ情報とダメージ
+	leftSideEnemyBullet1.src.x = 0.0f;
+	leftSideEnemyBullet1.src.y = 0.0f;
+	leftSideEnemyBullet1.damage = 5;
+
+	// --- 状態フラグの初期化 ---
+	leftSideEnemyBullet1.interpolation = false;  // 補間処理のフラグ
+	leftSideEnemyBullet1.isBulletShot = false;   // 発射中フラグ
+	leftSideEnemyBullet1.isHitX = false;
+	leftSideEnemyBullet1.isHitY = false;
+	leftSideEnemyBullet1.isHit = false;
+
+#pragma endregion
+
+#pragma region --- 弾2の基本情報 ---
+
+	// 弾の幅と高さ
+	leftSideEnemyBullet2.width = 20.0f;  // 弾の幅
+	leftSideEnemyBullet2.height = 20.0f; // 弾の高さ
+
+	// 弾の開始位置（敵の左辺）
+	leftSideEnemyBullet2.start.x = enemy.pos.x;
+	leftSideEnemyBullet2.start.y = enemy.pos.y + (leftSideEnemyBullet2.height * 1.2f);
+
+	// 弾の終了位置（左方向への移動を設定）
+	leftSideEnemyBullet2.end.x = enemy.pos.x - (leftSideEnemyBullet2.width * 2.0f);
+	leftSideEnemyBullet2.end.y = enemy.pos.y + (leftSideEnemyBullet2.height * 1.2f);
+
+	// 弾の初期位置を設定
+	leftSideEnemyBullet2.pos.x = leftSideEnemyBullet2.start.x;
+	leftSideEnemyBullet2.pos.y = leftSideEnemyBullet2.start.y;
+
+	// 弾の速度や補間処理フラグなど
+	leftSideEnemyBullet2.speed = 5.0f;
+	leftSideEnemyBullet2.length = 0.0f;
+	leftSideEnemyBullet2.t = 0.0f;
+	leftSideEnemyBullet2.easedT = 0.0f;
+
+	// --- 頂点座標の初期化 ---
+	// 左上
+	leftSideEnemyBullet2.vertex.leftTop.x = leftSideEnemyBullet2.pos.x;
+	leftSideEnemyBullet2.vertex.leftTop.y = leftSideEnemyBullet2.pos.y;
+
+	// 右上
+	leftSideEnemyBullet2.vertex.rightTop.x = leftSideEnemyBullet2.pos.x + leftSideEnemyBullet2.width;
+	leftSideEnemyBullet2.vertex.rightTop.y = leftSideEnemyBullet2.pos.y;
+
+	// 左下
+	leftSideEnemyBullet2.vertex.leftBottom.x = leftSideEnemyBullet2.pos.x;
+	leftSideEnemyBullet2.vertex.leftBottom.y = leftSideEnemyBullet2.pos.y + leftSideEnemyBullet2.height;
+
+	// 右下
+	leftSideEnemyBullet2.vertex.rightBottom.x = leftSideEnemyBullet2.pos.x + leftSideEnemyBullet2.width;
+	leftSideEnemyBullet2.vertex.rightBottom.y = leftSideEnemyBullet2.pos.y + leftSideEnemyBullet2.height;
+
+	// テクスチャ情報とダメージ
+	leftSideEnemyBullet2.src.x = 0.0f;
+	leftSideEnemyBullet2.src.y = 0.0f;
+	leftSideEnemyBullet2.damage = 5;
+
+	// --- 状態フラグの初期化 ---
+	leftSideEnemyBullet2.interpolation = false;  // 補間処理のフラグ
+	leftSideEnemyBullet2.isBulletShot = false;   // 発射中フラグ
+	leftSideEnemyBullet2.isHitX = false;
+	leftSideEnemyBullet2.isHitY = false;
+	leftSideEnemyBullet2.isHit = false;
+
+#pragma endregion
+
+#pragma endregion
+	//------------------
+#pragma region --- 右辺の弾の初期化 ---
+
+	Bullet rightSideEnemyBullet1{};
+	Bullet rightSideEnemyBullet2{};
+
+#pragma region --- 弾1の基本情報 ---
+
+	// 弾の幅と高さ
+	rightSideEnemyBullet1.width = 20.0f;
+	rightSideEnemyBullet1.height = 20.0f;
+
+	// 弾の開始座標 (敵の右端から発射)
+	rightSideEnemyBullet1.start.x = (enemy.pos.x + enemy.width) - rightSideEnemyBullet1.width;
+	rightSideEnemyBullet1.start.y = enemy.pos.y + (rightSideEnemyBullet1.height * 1.2f);
+
+	// 弾の終了座標 (右方向へ進む)
+	rightSideEnemyBullet1.end.x = ((enemy.pos.x + enemy.width) + rightSideEnemyBullet1.width);
+	rightSideEnemyBullet1.end.y = enemy.pos.y + (rightSideEnemyBullet1.height * 1.2f);
+
+	// 弾の初期位置を設定
+	rightSideEnemyBullet1.pos.x = rightSideEnemyBullet1.start.x;
+	rightSideEnemyBullet1.pos.y = rightSideEnemyBullet1.start.y;
+
+	// 弾の速度や補間処理フラグなど
+	rightSideEnemyBullet1.speed = 5.0f;
+	rightSideEnemyBullet1.length = 0.0f;
+	rightSideEnemyBullet1.t = 0.0f;
+	rightSideEnemyBullet1.easedT = 0.0f;
+
+	// --- 頂点座標の初期化 ---
+	// 左上
+	rightSideEnemyBullet1.vertex.leftTop.x = rightSideEnemyBullet1.pos.x;
+	rightSideEnemyBullet1.vertex.leftTop.y = rightSideEnemyBullet1.pos.y;
+
+	// 右上
+	rightSideEnemyBullet1.vertex.rightTop.x = rightSideEnemyBullet1.pos.x + rightSideEnemyBullet1.width;
+	rightSideEnemyBullet1.vertex.rightTop.y = rightSideEnemyBullet1.pos.y;
+
+	// 左下
+	rightSideEnemyBullet1.vertex.leftBottom.x = rightSideEnemyBullet1.pos.x;
+	rightSideEnemyBullet1.vertex.leftBottom.y = rightSideEnemyBullet1.pos.y + rightSideEnemyBullet1.height;
+
+	// 右下
+	rightSideEnemyBullet1.vertex.rightBottom.x = rightSideEnemyBullet1.pos.x + rightSideEnemyBullet1.width;
+	rightSideEnemyBullet1.vertex.rightBottom.y = rightSideEnemyBullet1.pos.y + rightSideEnemyBullet1.height;
+
+	// テクスチャ情報とダメージ
+	rightSideEnemyBullet1.src.x = 0.0f;
+	rightSideEnemyBullet1.src.y = 0.0f;
+	rightSideEnemyBullet1.damage = 5;
+
+	// フラグの初期化
+	rightSideEnemyBullet1.interpolation = false;
+	rightSideEnemyBullet1.isBulletShot = false;
+	rightSideEnemyBullet1.isHitX = false;
+	rightSideEnemyBullet1.isHitY = false;
+	rightSideEnemyBullet1.isHit = false;
+
+#pragma endregion
+
+#pragma region --- 弾2の基本情報 ---
+
+	// 弾の幅と高さ
+	rightSideEnemyBullet2.width = 20.0f;
+	rightSideEnemyBullet2.height = 20.0f;
+
+	// 弾の開始座標 (敵の右端から発射)
+	rightSideEnemyBullet2.start.x = (enemy.pos.x + enemy.width) - rightSideEnemyBullet2.width;
+	rightSideEnemyBullet2.start.y = enemy.pos.y + (rightSideEnemyBullet2.height * 1.2f);
+
+	// 弾の終了座標 (右方向へ進む)
+	rightSideEnemyBullet2.end.x = ((enemy.pos.x + enemy.width) + rightSideEnemyBullet2.width);
+	rightSideEnemyBullet2.end.y = enemy.pos.y + (rightSideEnemyBullet2.height * 1.2f);
+
+	// 弾の初期位置を設定
+	rightSideEnemyBullet2.pos.x = rightSideEnemyBullet2.start.x;
+	rightSideEnemyBullet2.pos.y = rightSideEnemyBullet2.start.y;
+
+	// 弾の速度や補間処理フラグなど
+	rightSideEnemyBullet2.speed = 5.0f;
+	rightSideEnemyBullet2.length = 0.0f;
+	rightSideEnemyBullet2.t = 0.0f;
+	rightSideEnemyBullet2.easedT = 0.0f;
+
+	// --- 頂点座標の初期化 ---
+	// 左上
+	rightSideEnemyBullet2.vertex.leftTop.x = rightSideEnemyBullet2.pos.x;
+	rightSideEnemyBullet2.vertex.leftTop.y = rightSideEnemyBullet2.pos.y;
+
+	// 右上
+	rightSideEnemyBullet2.vertex.rightTop.x = rightSideEnemyBullet2.pos.x + rightSideEnemyBullet2.width;
+	rightSideEnemyBullet2.vertex.rightTop.y = rightSideEnemyBullet2.pos.y;
+
+	// 左下
+	rightSideEnemyBullet2.vertex.leftBottom.x = rightSideEnemyBullet2.pos.x;
+	rightSideEnemyBullet2.vertex.leftBottom.y = rightSideEnemyBullet2.pos.y + rightSideEnemyBullet1.height;
+
+	// 右下
+	rightSideEnemyBullet2.vertex.rightBottom.x = rightSideEnemyBullet2.pos.x + rightSideEnemyBullet2.width;
+	rightSideEnemyBullet2.vertex.rightBottom.y = rightSideEnemyBullet2.pos.y + rightSideEnemyBullet2.height;
+
+	// テクスチャ情報とダメージ
+	rightSideEnemyBullet2.src.x = 0.0f;
+	rightSideEnemyBullet2.src.y = 0.0f;
+	rightSideEnemyBullet2.damage = 5;
+
+	// フラグの初期化
+	rightSideEnemyBullet2.interpolation = false;
+	rightSideEnemyBullet2.isBulletShot = false;
+	rightSideEnemyBullet2.isHitX = false;
+	rightSideEnemyBullet2.isHitY = false;
+	rightSideEnemyBullet2.isHit = false;
+
+#pragma endregion
+
+#pragma endregion
+	//------------------
+#pragma region --- 上辺の弾の初期化 ---
+
+	Bullet topSideEnemyBullet1{};
+	Bullet topSideEnemyBullet2{};
+
+#pragma region --- 弾1の基本情報 ---
+
+	// 弾の幅と高さ
+	topSideEnemyBullet1.width = 20.0f;
+	topSideEnemyBullet1.height = 20.0f;
+
+	// 弾の開始座標 (敵の上端から発射)
+	topSideEnemyBullet1.start.x = enemy.pos.x + (topSideEnemyBullet1.width * 2.6f);
+	topSideEnemyBullet1.start.y = enemy.pos.y;
+
+	// 弾の終了座標 (上方向へ進む)
+	topSideEnemyBullet1.end.x = enemy.pos.x + (topSideEnemyBullet1.width * 2.6f);
+	topSideEnemyBullet1.end.y = enemy.pos.y - (topSideEnemyBullet1.height * 2.0f);
+
+	// 弾の初期位置を設定
+	topSideEnemyBullet1.pos.x = topSideEnemyBullet1.start.x;
+	topSideEnemyBullet1.pos.y = topSideEnemyBullet1.start.y;
+
+	// 弾の速度や補間処理フラグなど
+	topSideEnemyBullet1.speed = 5.0f;
+	topSideEnemyBullet1.length = 0.0f;
+	topSideEnemyBullet1.t = 0.0f;
+	topSideEnemyBullet1.easedT = 0.0f;
+
+	// --- 頂点座標の初期化 ---
+	// 左上
+	topSideEnemyBullet1.vertex.leftTop.x = topSideEnemyBullet1.pos.x;
+	topSideEnemyBullet1.vertex.leftTop.y = topSideEnemyBullet1.pos.y;
+
+	// 右上
+	topSideEnemyBullet1.vertex.rightTop.x = topSideEnemyBullet1.pos.x + topSideEnemyBullet1.width;
+	topSideEnemyBullet1.vertex.rightTop.y = topSideEnemyBullet1.pos.y;
+
+	// 左下
+	topSideEnemyBullet1.vertex.leftBottom.x = topSideEnemyBullet1.pos.x;
+	topSideEnemyBullet1.vertex.leftBottom.y = topSideEnemyBullet1.pos.y + topSideEnemyBullet1.height;
+
+	// 右下
+	topSideEnemyBullet1.vertex.rightBottom.x = topSideEnemyBullet1.pos.x + topSideEnemyBullet1.width;
+	topSideEnemyBullet1.vertex.rightBottom.y = topSideEnemyBullet1.pos.y + topSideEnemyBullet1.height;
+
+	// テクスチャ情報とダメージ
+	topSideEnemyBullet1.src.x = 0.0f;
+	topSideEnemyBullet1.src.y = 0.0f;
+	topSideEnemyBullet1.damage = 5;
+
+	// フラグの初期化
+	topSideEnemyBullet1.interpolation = false;
+	topSideEnemyBullet1.isBulletShot = false;
+	topSideEnemyBullet1.isHitX = false;
+	topSideEnemyBullet1.isHitY = false;
+	topSideEnemyBullet1.isHit = false;
+
+#pragma endregion
+
+#pragma region --- 弾2の基本情報 ---
+
+	// 弾の幅と高さ
+	topSideEnemyBullet2.width = 20.0f;
+	topSideEnemyBullet2.height = 20.0f;
+
+	// 弾の開始座標 (敵の上端から発射)
+	topSideEnemyBullet2.start.x = enemy.pos.x + (topSideEnemyBullet2.width * 2.6f);
+	topSideEnemyBullet2.start.y = enemy.pos.y;
+
+	// 弾の終了座標 (上方向へ進む)
+	topSideEnemyBullet2.end.x = enemy.pos.x + (topSideEnemyBullet2.width * 2.6f);
+	topSideEnemyBullet2.end.y = enemy.pos.y - (topSideEnemyBullet2.height * 2.0f);
+
+	// 弾の初期位置を設定
+	topSideEnemyBullet2.pos.x = topSideEnemyBullet2.start.x;
+	topSideEnemyBullet2.pos.y = topSideEnemyBullet2.start.y;
+
+	// 弾の速度や補間処理フラグなど
+	topSideEnemyBullet2.speed = 5.0f;
+	topSideEnemyBullet2.length = 0.0f;
+	topSideEnemyBullet2.t = 0.0f;
+	topSideEnemyBullet2.easedT = 0.0f;
+
+	// --- 頂点座標の初期化 ---
+	// 左上
+	topSideEnemyBullet2.vertex.leftTop.x = topSideEnemyBullet2.pos.x;
+	topSideEnemyBullet2.vertex.leftTop.y = topSideEnemyBullet2.pos.y;
+
+	// 右上
+	topSideEnemyBullet2.vertex.rightTop.x = topSideEnemyBullet2.pos.x + topSideEnemyBullet2.width;
+	topSideEnemyBullet2.vertex.rightTop.y = topSideEnemyBullet2.pos.y;
+
+	// 左下
+	topSideEnemyBullet2.vertex.leftBottom.x = topSideEnemyBullet2.pos.x;
+	topSideEnemyBullet2.vertex.leftBottom.y = topSideEnemyBullet2.pos.y + topSideEnemyBullet2.height;
+
+	// 右下
+	topSideEnemyBullet2.vertex.rightBottom.x = topSideEnemyBullet2.pos.x + topSideEnemyBullet2.width;
+	topSideEnemyBullet2.vertex.rightBottom.y = topSideEnemyBullet2.pos.y + topSideEnemyBullet2.height;
+
+	// テクスチャ情報とダメージ
+	topSideEnemyBullet2.src.x = 0.0f;
+	topSideEnemyBullet2.src.y = 0.0f;
+	topSideEnemyBullet2.damage = 5;
+
+	// フラグの初期化
+	topSideEnemyBullet2.interpolation = false;
+	topSideEnemyBullet2.isBulletShot = false;
+	topSideEnemyBullet2.isHitX = false;
+	topSideEnemyBullet2.isHitY = false;
+	topSideEnemyBullet2.isHit = false;
+
+#pragma endregion
+
+#pragma endregion
+	//------------------
+#pragma region --- 下辺の弾の初期化 ---
+
+	Bullet bottomSideEnemyBullet1{};
+#pragma region --- 弾1の基本情報 ---
+
+	// 弾の幅と高さ
+	bottomSideEnemyBullet1.width = 20.0f;
+	bottomSideEnemyBullet1.height = 20.0f;
+
+	// 弾の開始座標 (敵の下端から発射)
+	bottomSideEnemyBullet1.start.x = enemy.pos.x + (bottomSideEnemyBullet1.width * 2.6f);
+	bottomSideEnemyBullet1.start.y = (enemy.pos.y + enemy.height) - bottomSideEnemyBullet1.height;
+
+	// 弾の終了座標 (下方向へ進む)
+	bottomSideEnemyBullet1.end.x = enemy.pos.x + (bottomSideEnemyBullet1.width * 2.6f);
+	bottomSideEnemyBullet1.end.y = (enemy.pos.y + enemy.height) + bottomSideEnemyBullet1.height;
+
+	// 弾の初期位置を設定
+	bottomSideEnemyBullet1.pos.x = bottomSideEnemyBullet1.start.x;
+	bottomSideEnemyBullet1.pos.y = bottomSideEnemyBullet1.start.y;
+
+	// 弾の速度や補間処理フラグなど
+	bottomSideEnemyBullet1.speed = 5.0f;
+	bottomSideEnemyBullet1.length = 0.0f;
+	bottomSideEnemyBullet1.t = 0.0f;
+	bottomSideEnemyBullet1.easedT = 0.0f;
+
+	// --- 頂点座標の初期化 ---
+	// 左上
+	bottomSideEnemyBullet1.vertex.leftTop.x = bottomSideEnemyBullet1.pos.x;
+	bottomSideEnemyBullet1.vertex.leftTop.y = bottomSideEnemyBullet1.pos.y;
+
+	// 右上
+	bottomSideEnemyBullet1.vertex.rightTop.x = bottomSideEnemyBullet1.pos.x + bottomSideEnemyBullet1.width;
+	bottomSideEnemyBullet1.vertex.rightTop.y = bottomSideEnemyBullet1.pos.y;
+
+	// 左下
+	bottomSideEnemyBullet1.vertex.leftBottom.x = bottomSideEnemyBullet1.pos.x;
+	bottomSideEnemyBullet1.vertex.leftBottom.y = bottomSideEnemyBullet1.pos.y + bottomSideEnemyBullet1.height;
+
+	// 右下
+	bottomSideEnemyBullet1.vertex.rightBottom.x = bottomSideEnemyBullet1.pos.x + bottomSideEnemyBullet1.width;
+	bottomSideEnemyBullet1.vertex.rightBottom.y = bottomSideEnemyBullet1.pos.y + bottomSideEnemyBullet1.height;
+
+	// テクスチャ情報とダメージ
+	bottomSideEnemyBullet1.src.x = 0.0f;
+	bottomSideEnemyBullet1.src.y = 0.0f;
+	bottomSideEnemyBullet1.damage = 5;
+
+	// フラグの初期化
+	bottomSideEnemyBullet1.interpolation = false;
+	bottomSideEnemyBullet1.isBulletShot = false;
+	bottomSideEnemyBullet1.isHitX = false;
+	bottomSideEnemyBullet1.isHitY = false;
+	bottomSideEnemyBullet1.isHit = false;
+
+#pragma endregion
+	Bullet bottomSideEnemyBullet2{};
+#pragma region --- 弾2の基本情報 ---
+
+	// 弾の幅と高さ
+	bottomSideEnemyBullet2.width = 20.0f;
+	bottomSideEnemyBullet2.height = 20.0f;
+
+	// 弾の開始座標 (敵の下端から発射)
+	bottomSideEnemyBullet2.start.x = enemy.pos.x + (bottomSideEnemyBullet2.width * 2.6f);
+	bottomSideEnemyBullet2.start.y = (enemy.pos.y + enemy.height) - bottomSideEnemyBullet2.height;
+
+	// 弾の終了座標 (下方向へ進む)
+	bottomSideEnemyBullet2.end.x = enemy.pos.x + (bottomSideEnemyBullet2.width * 2.6f);
+	bottomSideEnemyBullet2.end.y = (enemy.pos.y + enemy.height) + bottomSideEnemyBullet2.height;
+
+	// 弾の初期位置を設定
+	bottomSideEnemyBullet2.pos.x = bottomSideEnemyBullet2.start.x;
+	bottomSideEnemyBullet2.pos.y = bottomSideEnemyBullet2.start.y;
+
+	// 弾の速度や補間処理フラグなど
+	bottomSideEnemyBullet2.speed = 5.0f;
+	bottomSideEnemyBullet2.length = 0.0f;
+	bottomSideEnemyBullet2.t = 0.0f;
+	bottomSideEnemyBullet2.easedT = 0.0f;
+
+	// --- 頂点座標の初期化 ---
+	// 左上
+	bottomSideEnemyBullet2.vertex.leftTop.x = bottomSideEnemyBullet2.pos.x;
+	bottomSideEnemyBullet2.vertex.leftTop.y = bottomSideEnemyBullet2.pos.y;
+
+	// 右上
+	bottomSideEnemyBullet2.vertex.rightTop.x = bottomSideEnemyBullet2.pos.x + bottomSideEnemyBullet2.width;
+	bottomSideEnemyBullet2.vertex.rightTop.y = bottomSideEnemyBullet2.pos.y;
+
+	// 左下
+	bottomSideEnemyBullet2.vertex.leftBottom.x = bottomSideEnemyBullet2.pos.x;
+	bottomSideEnemyBullet2.vertex.leftBottom.y = bottomSideEnemyBullet2.pos.y + bottomSideEnemyBullet2.height;
+
+	// 右下
+	bottomSideEnemyBullet2.vertex.rightBottom.x = bottomSideEnemyBullet2.pos.x + bottomSideEnemyBullet2.width;
+	bottomSideEnemyBullet2.vertex.rightBottom.y = bottomSideEnemyBullet2.pos.y + bottomSideEnemyBullet2.height;
+
+	// テクスチャ情報とダメージ
+	bottomSideEnemyBullet2.src.x = 0.0f;
+	bottomSideEnemyBullet2.src.y = 0.0f;
+	bottomSideEnemyBullet2.damage = 5;
+
+	// フラグの初期化
+	bottomSideEnemyBullet2.interpolation = false;
+	bottomSideEnemyBullet2.isBulletShot = false;
+	bottomSideEnemyBullet2.isHitX = false;
+	bottomSideEnemyBullet2.isHitY = false;
+	bottomSideEnemyBullet2.isHit = false;
+
+#pragma endregion
+
+#pragma endregion
+	//====================================
 
 
 
-		// 左上
-		leftSideEnemyBullet[i].vertex.leftTop.x = leftSideEnemyBullet[i].pos.x;
-		leftSideEnemyBullet[i].vertex.leftTop.y = leftSideEnemyBullet[i].pos.y;
+	//====================================
+#pragma region --- 左上の弾の初期化 ---
+	//====================================
 
-		// 右上
-		leftSideEnemyBullet[i].vertex.rightTop.x = leftSideEnemyBullet[i].pos.x + leftSideEnemyBullet[i].width;
-		leftSideEnemyBullet[i].vertex.rightTop.y = leftSideEnemyBullet[i].pos.y;
+#pragma region --- 弾の基本情報 ---
 
-		// 左下
-		leftSideEnemyBullet[i].vertex.leftBottom.x = leftSideEnemyBullet[i].pos.x;
-		leftSideEnemyBullet[i].vertex.leftBottom.y = leftSideEnemyBullet[i].pos.y + leftSideEnemyBullet[i].height;
-
-		// 右下
-		leftSideEnemyBullet[i].vertex.rightBottom.x = leftSideEnemyBullet[i].pos.x + leftSideEnemyBullet[i].width;
-		leftSideEnemyBullet[i].vertex.rightBottom.y = leftSideEnemyBullet[i].pos.y + leftSideEnemyBullet[i].height;
-
-
-
-		leftSideEnemyBullet[i].src.x = 0.0f;
-		leftSideEnemyBullet[i].src.y = 0.0f;
-
-		// 弾のその他プロパティ
-		leftSideEnemyBullet[i].columns = 2;   // 列数（アニメーション用）
-		leftSideEnemyBullet[i].space = 12;    // 弾同士の間隔
-		leftSideEnemyBullet[i].speed = 5.0f;  // 弾の速度
-		leftSideEnemyBullet[i].length = 0.0f; // 移動距離
-		leftSideEnemyBullet[i].t = 0.0f;      // 時間補間
-		leftSideEnemyBullet[i].easedT = 0.0f; // 補間値
-
-		leftSideEnemyBullet[i].interpolation = false;  // 補間処理のフラグ
-		leftSideEnemyBullet[i].isBulletShot = false;   // 発射中フラグ
-	}
-
-	// 右辺の弾の初期化
-	Bullet rightSideEnemyBullet[2]{};
-	for (int i = 0; i < 2; ++i) {
-		// サイズ設定
-		rightSideEnemyBullet[i].width = 20.0f;
-		rightSideEnemyBullet[i].height = 20.0f;
-
-		// 弾の開始座標 (敵の右端から発射)
-		rightSideEnemyBullet[i].start.x = (enemy.pos.x + enemy.width) - rightSideEnemyBullet[i].width;
-		rightSideEnemyBullet[i].start.y = enemy.pos.y + (rightSideEnemyBullet[i].height * 1.2f);
-
-		// 弾の終了座標 (右方向へ進む)
-		rightSideEnemyBullet[i].end.x = ((enemy.pos.x + enemy.width) + rightSideEnemyBullet[i].width);
-		rightSideEnemyBullet[i].end.y = enemy.pos.y + (rightSideEnemyBullet[i].height * 1.2f);
-
-		// 弾の現在座標
-		rightSideEnemyBullet[i].pos.x = rightSideEnemyBullet[i].start.x;
-		rightSideEnemyBullet[i].pos.y = rightSideEnemyBullet[i].start.y;
-
-
-
-		// 左上
-		rightSideEnemyBullet[i].vertex.leftTop.x = rightSideEnemyBullet[i].pos.x;
-		rightSideEnemyBullet[i].vertex.leftTop.y = rightSideEnemyBullet[i].pos.y;
-
-		// 右上
-		rightSideEnemyBullet[i].vertex.rightTop.x = rightSideEnemyBullet[i].pos.x + rightSideEnemyBullet[i].width;
-		rightSideEnemyBullet[i].vertex.rightTop.y = rightSideEnemyBullet[i].pos.y;
-
-		// 左下
-		rightSideEnemyBullet[i].vertex.leftBottom.x = rightSideEnemyBullet[i].pos.x;
-		rightSideEnemyBullet[i].vertex.leftBottom.y = rightSideEnemyBullet[i].pos.y + rightSideEnemyBullet[i].height;
-
-		// 右下
-		rightSideEnemyBullet[i].vertex.rightBottom.x = rightSideEnemyBullet[i].pos.x + rightSideEnemyBullet[i].width;
-		rightSideEnemyBullet[i].vertex.rightBottom.y = rightSideEnemyBullet[i].pos.y + rightSideEnemyBullet[i].height;
-
-
-		rightSideEnemyBullet[i].src.x = 0.0f;
-		rightSideEnemyBullet[i].src.y = 0.0f;
-
-
-		// 弾の動作パラメータ
-		rightSideEnemyBullet[i].columns = 2;
-		rightSideEnemyBullet[i].space = 12;
-		rightSideEnemyBullet[i].speed = 5.0f;
-		rightSideEnemyBullet[i].length = 0.0f;
-		rightSideEnemyBullet[i].t = 0.0f;
-		rightSideEnemyBullet[i].easedT = 0.0f;
-
-		// フラグの初期化
-		rightSideEnemyBullet[i].interpolation = false;
-		rightSideEnemyBullet[i].isBulletShot = false;
-	}
-
-	// 上辺の弾の初期化
-	Bullet topSideEnemyBullet[2]{};
-	for (int i = 0; i < 2; ++i) {
-		// サイズ設定
-		topSideEnemyBullet[i].width = 20.0f;
-		topSideEnemyBullet[i].height = 20.0f;
-
-		// 弾の開始座標 (敵の上端から発射)
-		topSideEnemyBullet[i].start.x = enemy.pos.x + (topSideEnemyBullet[i].width * 2.6f);
-		topSideEnemyBullet[i].start.y = enemy.pos.y;
-
-		// 弾の終了座標 (上方向へ進む)
-		topSideEnemyBullet[i].end.x = enemy.pos.x + (topSideEnemyBullet[i].width * 2.6f);
-		topSideEnemyBullet[i].end.y = enemy.pos.y - (topSideEnemyBullet[i].height * 2.0f);
-
-		// 弾の現在座標
-		topSideEnemyBullet[i].pos.x = topSideEnemyBullet[i].start.x;
-		topSideEnemyBullet[i].pos.y = topSideEnemyBullet[i].start.y;
-
-
-		// 左上
-		topSideEnemyBullet[i].vertex.leftTop.x = topSideEnemyBullet[i].pos.x;
-		topSideEnemyBullet[i].vertex.leftTop.y = topSideEnemyBullet[i].pos.y;
-
-		// 右上
-		topSideEnemyBullet[i].vertex.rightTop.x = topSideEnemyBullet[i].pos.x + topSideEnemyBullet[i].width;
-		topSideEnemyBullet[i].vertex.rightTop.y = topSideEnemyBullet[i].pos.y;
-
-		// 左下
-		topSideEnemyBullet[i].vertex.leftBottom.x = topSideEnemyBullet[i].pos.x;
-		topSideEnemyBullet[i].vertex.leftBottom.y = topSideEnemyBullet[i].pos.y + topSideEnemyBullet[i].height;
-
-		// 右下
-		topSideEnemyBullet[i].vertex.rightBottom.x = topSideEnemyBullet[i].pos.x + topSideEnemyBullet[i].width;
-		topSideEnemyBullet[i].vertex.rightBottom.y = topSideEnemyBullet[i].pos.y + topSideEnemyBullet[i].height;
-
-
-		topSideEnemyBullet[i].src.x = 0.0f;
-		topSideEnemyBullet[i].src.y = 0.0f;
-
-
-		// 弾の動作パラメータ
-		topSideEnemyBullet[i].columns = 2;
-		topSideEnemyBullet[i].space = 55;
-		topSideEnemyBullet[i].speed = 5.0f;
-		topSideEnemyBullet[i].length = 0.0f;
-		topSideEnemyBullet[i].t = 0.0f;
-		topSideEnemyBullet[i].easedT = 0.0f;
-
-		// フラグの初期化
-		topSideEnemyBullet[i].interpolation = false;
-		topSideEnemyBullet[i].isBulletShot = false;
-	}
-
-	// 下辺の弾の初期化
-	Bullet bottomSideEnemyBullet[2]{};
-	for (int i = 0; i < 2; ++i) {
-		// サイズ設定
-		bottomSideEnemyBullet[i].width = 20.0f;
-		bottomSideEnemyBullet[i].height = 20.0f;
-
-		// 弾の開始座標 (敵の下端から発射)
-		bottomSideEnemyBullet[i].start.x = enemy.pos.x + (bottomSideEnemyBullet[i].width * 2.6f);
-		bottomSideEnemyBullet[i].start.y = (enemy.pos.y + enemy.height) - bottomSideEnemyBullet[i].height;
-
-		// 弾の終了座標 (下方向へ進む)
-		bottomSideEnemyBullet[i].end.x = enemy.pos.x + (bottomSideEnemyBullet[i].width * 2.6f);
-		bottomSideEnemyBullet[i].end.y = (enemy.pos.y + enemy.height) + bottomSideEnemyBullet[i].height;
-
-		// 弾の現在座標
-		bottomSideEnemyBullet[i].pos.x = bottomSideEnemyBullet[i].start.x;
-		bottomSideEnemyBullet[i].pos.y = bottomSideEnemyBullet[i].start.y;
-
-
-		// 左上
-		bottomSideEnemyBullet[i].vertex.leftTop.x = bottomSideEnemyBullet[i].pos.x;
-		bottomSideEnemyBullet[i].vertex.leftTop.y = bottomSideEnemyBullet[i].pos.y;
-
-		// 右上
-		bottomSideEnemyBullet[i].vertex.rightTop.x = bottomSideEnemyBullet[i].pos.x + bottomSideEnemyBullet[i].width;
-		bottomSideEnemyBullet[i].vertex.rightTop.y = bottomSideEnemyBullet[i].pos.y;
-
-		// 左下
-		bottomSideEnemyBullet[i].vertex.leftBottom.x = bottomSideEnemyBullet[i].pos.x;
-		bottomSideEnemyBullet[i].vertex.leftBottom.y = bottomSideEnemyBullet[i].pos.y + bottomSideEnemyBullet[i].height;
-
-		// 右下
-		bottomSideEnemyBullet[i].vertex.rightBottom.x = bottomSideEnemyBullet[i].pos.x + bottomSideEnemyBullet[i].width;
-		bottomSideEnemyBullet[i].vertex.rightBottom.y = bottomSideEnemyBullet[i].pos.y + bottomSideEnemyBullet[i].height;
-
-		bottomSideEnemyBullet[i].src.x = 0.0f;
-		bottomSideEnemyBullet[i].src.y = 0.0f;
-
-		// 弾の動作パラメータ
-		bottomSideEnemyBullet[i].columns = 2;
-		bottomSideEnemyBullet[i].space = 55;
-		bottomSideEnemyBullet[i].speed = 5.0f;
-		bottomSideEnemyBullet[i].length = 0.0f;
-		bottomSideEnemyBullet[i].t = 0.0f;
-		bottomSideEnemyBullet[i].easedT = 0.0f;
-
-		// フラグの初期化
-		bottomSideEnemyBullet[i].interpolation = false;
-		bottomSideEnemyBullet[i].isBulletShot = false;
-	}
-
-	// =======================
-    // 左上の弾丸初期化
-    // =======================
 	Bullet leftTopEnemyBullet{};
 
-	// サイズ設定
+	// 弾の幅と高さ
 	leftTopEnemyBullet.width = 20.0f;
 	leftTopEnemyBullet.height = 20.0f;
 
@@ -331,10 +601,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	leftTopEnemyBullet.end.x = enemy.pos.x - (leftTopEnemyBullet.width * 2.0f);
 	leftTopEnemyBullet.end.y = enemy.pos.y - (leftTopEnemyBullet.height * 2.0f);
 
-	// 現在座標の初期化
+	// 弾の初期位置を設定
 	leftTopEnemyBullet.pos.x = leftTopEnemyBullet.start.x;
 	leftTopEnemyBullet.pos.y = leftTopEnemyBullet.start.y;
 
+	// 弾の速度や補間処理フラグなど
+	leftTopEnemyBullet.speed = 5.0f;
+	leftTopEnemyBullet.length = 0.0f;
+	leftTopEnemyBullet.t = 0.0f;
+	leftTopEnemyBullet.easedT = 0.0f;
+
+	// --- 頂点座標の初期化 ---
 	// 左上
 	leftTopEnemyBullet.vertex.leftTop.x = leftTopEnemyBullet.pos.x;
 	leftTopEnemyBullet.vertex.leftTop.y = leftTopEnemyBullet.pos.y;
@@ -351,25 +628,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	leftTopEnemyBullet.vertex.rightBottom.x = leftTopEnemyBullet.pos.x + leftTopEnemyBullet.width;
 	leftTopEnemyBullet.vertex.rightBottom.y = leftTopEnemyBullet.pos.y + leftTopEnemyBullet.height;
 
+	// テクスチャ情報とダメージ
 	leftTopEnemyBullet.src.x = 0.0f;
 	leftTopEnemyBullet.src.y = 0.0f;
-
-	// 弾の動作パラメータ
-	leftTopEnemyBullet.speed = 5.0f;
-	leftTopEnemyBullet.length = 0.0f;
-	leftTopEnemyBullet.t = 0.0f;
-	leftTopEnemyBullet.easedT = 0.0f;
+	leftTopEnemyBullet.damage = 5;
 
 	// フラグの初期化
 	leftTopEnemyBullet.interpolation = false;
 	leftTopEnemyBullet.isBulletShot = false;
+	leftTopEnemyBullet.isHitX = false;
+	leftTopEnemyBullet.isHitY = false;
+	leftTopEnemyBullet.isHit = false;
 
-	// =======================
-    // 右上の弾丸初期化
-    // =======================
+#pragma endregion
+
+#pragma endregion
+
+
+	//------------------
+#pragma region --- 右上の弾の初期化 ---
+	//====================================
+
+#pragma region --- 弾の基本情報 ---
+
 	Bullet rightTopEnemyBullet{};
 
-	// サイズ設定
+	// 弾の幅と高さ
 	rightTopEnemyBullet.width = 20.0f;
 	rightTopEnemyBullet.height = 20.0f;
 
@@ -381,12 +665,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rightTopEnemyBullet.end.x = ((enemy.pos.x + enemy.width) - rightTopEnemyBullet.width) + (rightTopEnemyBullet.width * 2.0f);
 	rightTopEnemyBullet.end.y = enemy.pos.y - (rightTopEnemyBullet.height * 2.0f);
 
-	// 現在座標の初期化
+	// 弾の初期位置を設定
 	rightTopEnemyBullet.pos.x = rightTopEnemyBullet.start.x;
 	rightTopEnemyBullet.pos.y = rightTopEnemyBullet.start.y;
 
+	// 弾の速度や補間処理フラグなど
+	rightTopEnemyBullet.speed = 5.0f;
+	rightTopEnemyBullet.length = 0.0f;
+	rightTopEnemyBullet.t = 0.0f;
+	rightTopEnemyBullet.easedT = 0.0f;
 
-
+	// --- 頂点座標の初期化 ---
 	// 左上
 	rightTopEnemyBullet.vertex.leftTop.x = rightTopEnemyBullet.pos.x;
 	rightTopEnemyBullet.vertex.leftTop.y = rightTopEnemyBullet.pos.y;
@@ -403,25 +692,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rightTopEnemyBullet.vertex.rightBottom.x = rightTopEnemyBullet.pos.x + rightTopEnemyBullet.width;
 	rightTopEnemyBullet.vertex.rightBottom.y = rightTopEnemyBullet.pos.y + rightTopEnemyBullet.height;
 
+	// テクスチャ情報とダメージ
 	rightTopEnemyBullet.src.x = 0.0f;
 	rightTopEnemyBullet.src.y = 0.0f;
-
-	// 弾の動作パラメータ
-	rightTopEnemyBullet.speed = 5.0f;
-	rightTopEnemyBullet.length = 0.0f;
-	rightTopEnemyBullet.t = 0.0f;
-	rightTopEnemyBullet.easedT = 0.0f;
+	rightTopEnemyBullet.damage = 5;
 
 	// フラグの初期化
 	rightTopEnemyBullet.interpolation = false;
 	rightTopEnemyBullet.isBulletShot = false;
+	rightTopEnemyBullet.isHitX = false;
+	rightTopEnemyBullet.isHitY = false;
+	rightTopEnemyBullet.isHit = false;
 
-	// =======================
-    // 左下の弾丸初期化
-    // =======================
+#pragma endregion
+
+#pragma endregion
+
+
+	//------------------
+#pragma region --- 左下の弾の初期化 ---
+	//====================================
+
+#pragma region --- 弾の基本情報 ---
+
 	Bullet leftBottomEnemyBullet{};
 
-	// サイズ設定
+	// 弾の幅と高さ
 	leftBottomEnemyBullet.width = 20.0f;
 	leftBottomEnemyBullet.height = 20.0f;
 
@@ -433,12 +729,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	leftBottomEnemyBullet.end.x = enemy.pos.x - (leftBottomEnemyBullet.width * 2.0f);
 	leftBottomEnemyBullet.end.y = ((enemy.pos.y + enemy.height) - leftBottomEnemyBullet.height) + (leftBottomEnemyBullet.height * 2.0f);
 
-	// 現在座標の初期化
+	// 弾の初期位置を設定
 	leftBottomEnemyBullet.pos.x = leftBottomEnemyBullet.start.x;
 	leftBottomEnemyBullet.pos.y = leftBottomEnemyBullet.start.y;
 
+	// 弾の速度や補間処理フラグなど
+	leftBottomEnemyBullet.speed = 5.0f;
+	leftBottomEnemyBullet.length = 0.0f;
+	leftBottomEnemyBullet.t = 0.0f;
+	leftBottomEnemyBullet.easedT = 0.0f;
 
-
+	// --- 頂点座標の初期化 ---
 	// 左上
 	leftBottomEnemyBullet.vertex.leftTop.x = leftBottomEnemyBullet.pos.x;
 	leftBottomEnemyBullet.vertex.leftTop.y = leftBottomEnemyBullet.pos.y;
@@ -455,25 +756,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	leftBottomEnemyBullet.vertex.rightBottom.x = leftBottomEnemyBullet.pos.x + leftBottomEnemyBullet.width;
 	leftBottomEnemyBullet.vertex.rightBottom.y = leftBottomEnemyBullet.pos.y + leftBottomEnemyBullet.height;
 
+	// テクスチャ情報とダメージ
 	leftBottomEnemyBullet.src.x = 0.0f;
 	leftBottomEnemyBullet.src.y = 0.0f;
-
-	// 弾の動作パラメータ
-	leftBottomEnemyBullet.speed = 5.0f;
-	leftBottomEnemyBullet.length = 0.0f;
-	leftBottomEnemyBullet.t = 0.0f;
-	leftBottomEnemyBullet.easedT = 0.0f;
+	leftBottomEnemyBullet.damage = 5;
 
 	// フラグの初期化
 	leftBottomEnemyBullet.interpolation = false;
 	leftBottomEnemyBullet.isBulletShot = false;
+	leftBottomEnemyBullet.isHitX = false;
+	leftBottomEnemyBullet.isHitY = false;
+	leftBottomEnemyBullet.isHit = false;
 
-	// =======================
-    // 右下の弾丸初期化
-    // =======================
+#pragma endregion
+
+#pragma endregion
+
+
+	//------------------
+#pragma region --- 右下の弾の初期化 ---
+	//====================================
+
+#pragma region --- 弾の基本情報 ---
+
 	Bullet rightBottomEnemyBullet{};
 
-	// サイズ設定
+	// 弾の幅と高さ
 	rightBottomEnemyBullet.width = 20.0f;
 	rightBottomEnemyBullet.height = 20.0f;
 
@@ -485,12 +793,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rightBottomEnemyBullet.end.x = ((enemy.pos.x + enemy.width) - rightBottomEnemyBullet.width) + (rightBottomEnemyBullet.width * 2.0f);
 	rightBottomEnemyBullet.end.y = ((enemy.pos.y + enemy.height) - rightBottomEnemyBullet.height) + (rightBottomEnemyBullet.height * 2.0f);
 
-	// 現在座標の初期化
+	// 弾の初期位置を設定
 	rightBottomEnemyBullet.pos.x = rightBottomEnemyBullet.start.x;
 	rightBottomEnemyBullet.pos.y = rightBottomEnemyBullet.start.y;
 
+	// 弾の速度や補間処理フラグなど
+	rightBottomEnemyBullet.speed = 5.0f;
+	rightBottomEnemyBullet.length = 0.0f;
+	rightBottomEnemyBullet.t = 0.0f;
+	rightBottomEnemyBullet.easedT = 0.0f;
 
-
+	// --- 頂点座標の初期化 ---
 	// 左上
 	rightBottomEnemyBullet.vertex.leftTop.x = rightBottomEnemyBullet.pos.x;
 	rightBottomEnemyBullet.vertex.leftTop.y = rightBottomEnemyBullet.pos.y;
@@ -507,29 +820,61 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rightBottomEnemyBullet.vertex.rightBottom.x = rightBottomEnemyBullet.pos.x + rightBottomEnemyBullet.width;
 	rightBottomEnemyBullet.vertex.rightBottom.y = rightBottomEnemyBullet.pos.y + rightBottomEnemyBullet.height;
 
-
-
-
+	// テクスチャ情報とダメージ
 	rightBottomEnemyBullet.src.x = 0.0f;
 	rightBottomEnemyBullet.src.y = 0.0f;
-
-	// 弾の動作パラメータ
-	rightBottomEnemyBullet.speed = 5.0f;
-	rightBottomEnemyBullet.length = 0.0f;
-	rightBottomEnemyBullet.t = 0.0f;
-	rightBottomEnemyBullet.easedT = 0.0f;
+	rightBottomEnemyBullet.damage = 5;
 
 	// フラグの初期化
 	rightBottomEnemyBullet.interpolation = false;
 	rightBottomEnemyBullet.isBulletShot = false;
+	rightBottomEnemyBullet.isHitX = false;
+	rightBottomEnemyBullet.isHitY = false;
+	rightBottomEnemyBullet.isHit = false;
+
+#pragma endregion
+
+#pragma endregion
+
+
+	//====================================
+
+#pragma endregion
+
+#pragma region player
 
 	Player player{};
 	player.pos.x = 640.0f;
 	player.pos.y = 620.0f;
+	player.width = 64.0f;
+	player.height = 64.0f;
+
+	// 左上
+	player.vertex.leftTop.x = player.pos.x;
+	player.vertex.leftTop.y = player.pos.y;
+
+	// 右上
+	player.vertex.rightTop.x = player.pos.x + player.width;
+	player.vertex.rightTop.y = player.pos.y;
+
+	// 左下
+	player.vertex.leftBottom.x = player.pos.x;
+	player.vertex.leftBottom.y = player.pos.y + player.height;
+
+	// 右下
+	player.vertex.rightBottom.x = player.pos.x + player.width;
+	player.vertex.rightBottom.y = player.pos.y + player.width;
+
 	player.dir.x = player.pos.x - enemy.pos.y;
 	player.dir.y = player.pos.y - enemy.pos.y;
 	player.radius = 40.0f;
 	player.speed = 5.0f;
+
+	int direction = 0;//プレイヤーの向き
+
+	int psychicTexture = Novice::LoadTexture("./Resources/images/psychic.png");
+
+#pragma endregion
 
 #pragma endregion
 
@@ -550,137 +895,236 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (keys[DIK_W])
 		{
+			direction = 0;
 			player.pos.y -= player.speed;
 		}
 
 		if (keys[DIK_S])
 		{
+			direction = 1;
 			player.pos.y += player.speed;
 		}
 
 		if (keys[DIK_A])
 		{
+			direction = 2;
 			player.pos.x -= player.speed;
 		}
 
 		if (keys[DIK_D])
 		{
+			direction = 3;
 			player.pos.x += player.speed;
 		}
 
-		// --- 敵の左辺の弾 ---
-		for (int i = 0; i < leftSideEnemyBullet[0].columns; ++i) {
+#pragma region --- 左辺の弾の更新処理 ---
 
-			if (!leftSideEnemyBullet[i].isBulletShot) {
-				leftSideEnemyBullet[i].isBulletShot = true;
-				leftSideEnemyBullet[i].length = 0.0f;
-				leftSideEnemyBullet[i].t = 0.0f;
-				leftSideEnemyBullet[i].easedT = 0.0f;
+#pragma region --- 弾1の左辺の弾 ---
+		
+		if (!leftSideEnemyBullet1.isBulletShot) {
 
-				player.dir.x = player.pos.x - enemy.pos.x;
-				player.dir.y = player.pos.y - enemy.pos.y;
+			leftSideEnemyBullet1.length = 0.0f;
+			leftSideEnemyBullet1.t = 0.0f;
+			leftSideEnemyBullet1.easedT = 0.0f;
 
-				leftSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
-				if (leftSideEnemyBullet[i].length > 0.0f) {
-					leftSideEnemyBullet[i].velocity.x = (player.dir.x / leftSideEnemyBullet[i].length) * leftSideEnemyBullet[i].speed;
-					leftSideEnemyBullet[i].velocity.y = (player.dir.y / leftSideEnemyBullet[i].length) * leftSideEnemyBullet[i].speed;
-				}
+			player.dir.x = player.pos.x - enemy.pos.x;
+			player.dir.y = player.pos.y - enemy.pos.y;
+
+			leftSideEnemyBullet1.length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+			if (leftSideEnemyBullet1.length > 0.0f) {
+				leftSideEnemyBullet1.velocity.x = (player.dir.x / leftSideEnemyBullet1.length) * leftSideEnemyBullet1.speed;
+				leftSideEnemyBullet1.velocity.y = (player.dir.y / leftSideEnemyBullet1.length) * leftSideEnemyBullet1.speed;
 			}
 
-			if (leftSideEnemyBullet[i].isBulletShot) {
+			leftSideEnemyBullet1.isBulletShot = true;
+		}
 
-				if (!leftSideEnemyBullet[i].interpolation) {
+		if (leftSideEnemyBullet1.isBulletShot) {
 
-					leftSideEnemyBullet[i].t += 0.008f;
+			if (!leftSideEnemyBullet1.interpolation) {
 
-					if (leftSideEnemyBullet[i].t >= 1.0f) {
-						leftSideEnemyBullet[i].t = 1.0f;
-						leftSideEnemyBullet[i].interpolation = true;
-					}
+				leftSideEnemyBullet1.t += 0.008f;
 
-					leftSideEnemyBullet[i].easedT = 1.0f - powf(1.0f - leftSideEnemyBullet[i].t, 3.0f);
+				if (leftSideEnemyBullet1.t >= 1.0f) {
+					leftSideEnemyBullet1.t = 1.0f;
+					leftSideEnemyBullet1.interpolation = true;
+				}
 
-					leftSideEnemyBullet[i].pos.x = (1.0f - leftSideEnemyBullet[i].easedT) * leftSideEnemyBullet[i].start.x + leftSideEnemyBullet[i].easedT * leftSideEnemyBullet[i].end.x;
-					leftSideEnemyBullet[i].pos.y = (1.0f - leftSideEnemyBullet[i].easedT) * leftSideEnemyBullet[i].start.y + leftSideEnemyBullet[i].easedT * leftSideEnemyBullet[i].end.y;
+				leftSideEnemyBullet1.easedT = 1.0f - powf(1.0f - leftSideEnemyBullet1.t, 3.0f);
+				leftSideEnemyBullet1.pos.x = (1.0f - leftSideEnemyBullet1.easedT) * leftSideEnemyBullet1.start.x + leftSideEnemyBullet1.easedT * leftSideEnemyBullet1.end.x;
+				leftSideEnemyBullet1.pos.y = (1.0f - leftSideEnemyBullet1.easedT) * leftSideEnemyBullet1.start.y + leftSideEnemyBullet1.easedT * leftSideEnemyBullet1.end.y;
 
-				} else {
+			} else {
 
-					leftSideEnemyBullet[i].pos.x += leftSideEnemyBullet[i].velocity.x;
-					leftSideEnemyBullet[i].pos.y += leftSideEnemyBullet[i].velocity.y;
+				leftSideEnemyBullet1.pos.x += leftSideEnemyBullet1.velocity.x;
+				leftSideEnemyBullet1.pos.y += leftSideEnemyBullet1.velocity.y;
 
-					if (leftSideEnemyBullet[i].pos.y <= 0.0f ||
-						leftSideEnemyBullet[i].pos.x <= 0.0f ||
-						leftSideEnemyBullet[i].pos.x >= 1280.0f ||
-						leftSideEnemyBullet[i].pos.y + leftSideEnemyBullet[i].height >= 720.0f) {
 
-						leftSideEnemyBullet[i].pos.x = leftSideEnemyBullet[i].start.x;
-						leftSideEnemyBullet[i].pos.y = leftSideEnemyBullet[i].start.y;
-						leftSideEnemyBullet[i].isBulletShot = false;
-						leftSideEnemyBullet[i].interpolation = false;
-					}
+				if (leftSideEnemyBullet1.pos.y <= 0.0f ||
+					leftSideEnemyBullet1.pos.x <= 0.0f ||
+					leftSideEnemyBullet1.pos.x >= 1280.0f ||
+					leftSideEnemyBullet1.pos.y + leftSideEnemyBullet1.height >= 720.0f) {
+
+					// 弾の開始位置（敵の左辺）
+					leftSideEnemyBullet1.start.x = enemy.pos.x;
+					leftSideEnemyBullet1.start.y = enemy.pos.y + (leftSideEnemyBullet1.height * 1.2f);
+
+					// 弾の終了位置（左方向への移動を設定）
+					leftSideEnemyBullet1.end.x = enemy.pos.x - (leftSideEnemyBullet1.width * 2.0f);
+					leftSideEnemyBullet1.end.y = enemy.pos.y + (leftSideEnemyBullet1.height * 1.2f);
+
+					// 弾の初期位置を設定
+					leftSideEnemyBullet1.pos.x = leftSideEnemyBullet1.start.x;
+					leftSideEnemyBullet1.pos.y = leftSideEnemyBullet1.start.y;
+
+					leftSideEnemyBullet1.isBulletShot = false;
+					leftSideEnemyBullet1.interpolation = false;
 				}
 			}
 		}
 
-		// --- 敵の右辺の弾 ---
-		for (int i = 0; i < rightSideEnemyBullet[0].columns; ++i) {
+#pragma endregion
 
-			if (!rightSideEnemyBullet[i].isBulletShot) {
-				rightSideEnemyBullet[i].isBulletShot = true;
-				rightSideEnemyBullet[i].length = 0.0f;
-				rightSideEnemyBullet[i].t = 0.0f;
-				rightSideEnemyBullet[i].easedT = 0.0f;
+#pragma region --- 弾2の左辺の弾 ---
 
-				player.dir.x = player.pos.x - enemy.pos.x;
-				player.dir.y = player.pos.y - enemy.pos.y;
+		if (!leftSideEnemyBullet2.isBulletShot) {
 
-				rightSideEnemyBullet[i].length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
-				if (rightSideEnemyBullet[i].length > 0.0f) {
-					rightSideEnemyBullet[i].velocity.x = (player.dir.x / rightSideEnemyBullet[i].length) * rightSideEnemyBullet[i].speed;
-					rightSideEnemyBullet[i].velocity.y = (player.dir.y / rightSideEnemyBullet[i].length) * rightSideEnemyBullet[i].speed;
-				}
+			leftSideEnemyBullet2.length = 0.0f;
+			leftSideEnemyBullet2.t = 0.0f;
+			leftSideEnemyBullet2.easedT = 0.0f;
+
+			player.dir.x = player.pos.x - enemy.pos.x;
+			player.dir.y = player.pos.y - enemy.pos.y;
+
+			leftSideEnemyBullet2.length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+			if (leftSideEnemyBullet2.length > 0.0f) {
+				leftSideEnemyBullet2.velocity.x = (player.dir.x / leftSideEnemyBullet2.length) * leftSideEnemyBullet2.speed;
+				leftSideEnemyBullet2.velocity.y = (player.dir.y / leftSideEnemyBullet2.length) * leftSideEnemyBullet2.speed;
 			}
 
-			if (rightSideEnemyBullet[i].isBulletShot) {
+			leftSideEnemyBullet2.isBulletShot = true;
+		}
 
-				if (!rightSideEnemyBullet[i].interpolation) {
+		if (leftSideEnemyBullet2.isBulletShot) {
 
-					rightSideEnemyBullet[i].t += 0.008f;
+			if (!leftSideEnemyBullet2.interpolation) {
 
-					if (rightSideEnemyBullet[i].t >= 1.0f) {
-						rightSideEnemyBullet[i].t = 1.0f;
-						rightSideEnemyBullet[i].interpolation = true;
-					}
+				leftSideEnemyBullet2.t += 0.008f;
 
-					rightSideEnemyBullet[i].easedT = 1.0f - powf(1.0f - rightSideEnemyBullet[i].t, 3.0f);
+				if (leftSideEnemyBullet2.t >= 1.0f) {
+					leftSideEnemyBullet2.t = 1.0f;
+					leftSideEnemyBullet2.interpolation = true;
+				}
 
-					rightSideEnemyBullet[i].pos.x = (1.0f - rightSideEnemyBullet[i].easedT) * rightSideEnemyBullet[i].start.x + rightSideEnemyBullet[i].easedT * rightSideEnemyBullet[i].end.x;
-					rightSideEnemyBullet[i].pos.y = (1.0f - rightSideEnemyBullet[i].easedT) * rightSideEnemyBullet[i].start.y + rightSideEnemyBullet[i].easedT * rightSideEnemyBullet[i].end.y;
+				leftSideEnemyBullet2.easedT = 1.0f - powf(1.0f - leftSideEnemyBullet2.t, 3.0f);
+				leftSideEnemyBullet2.pos.x = (1.0f - leftSideEnemyBullet2.easedT) * leftSideEnemyBullet2.start.x + leftSideEnemyBullet2.easedT * leftSideEnemyBullet2.end.x;
+				leftSideEnemyBullet2.pos.y = (1.0f - leftSideEnemyBullet2.easedT) * leftSideEnemyBullet2.start.y + leftSideEnemyBullet2.easedT * leftSideEnemyBullet2.end.y;
 
-				} else {			
+			} else {
 
-					rightSideEnemyBullet[i].pos.x += rightSideEnemyBullet[i].velocity.x;
-					rightSideEnemyBullet[i].pos.y += rightSideEnemyBullet[i].velocity.y;
+				leftSideEnemyBullet2.pos.x += leftSideEnemyBullet2.velocity.x;
+				leftSideEnemyBullet2.pos.y += leftSideEnemyBullet2.velocity.y;
 
-					if (rightSideEnemyBullet[i].pos.y <= 0.0f ||
-						rightSideEnemyBullet[i].pos.x <= 0.0f ||
-						rightSideEnemyBullet[i].pos.x >= 1280.0f ||
-						rightSideEnemyBullet[i].pos.y + rightSideEnemyBullet[i].height >= 720.0f) {
 
-						rightSideEnemyBullet[i].pos.x = rightSideEnemyBullet[i].start.x;
-						rightSideEnemyBullet[i].pos.y = rightSideEnemyBullet[i].start.y;
-						rightSideEnemyBullet[i].isBulletShot = false;
-						rightSideEnemyBullet[i].interpolation = false;
-					}
+				if (leftSideEnemyBullet2.pos.y <= 0.0f ||
+					leftSideEnemyBullet2.pos.x <= 0.0f ||
+					leftSideEnemyBullet2.pos.x >= 1280.0f ||
+					leftSideEnemyBullet2.pos.y + leftSideEnemyBullet2.height >= 720.0f) {
+
+					// 弾の開始位置（敵の左辺）
+					leftSideEnemyBullet2.start.x = enemy.pos.x;
+					leftSideEnemyBullet2.start.y = enemy.pos.y + (leftSideEnemyBullet2.height * 1.2f);
+
+					// 弾の終了位置（左方向への移動を設定）
+					leftSideEnemyBullet2.end.x = enemy.pos.x - (leftSideEnemyBullet2.width * 2.0f);
+					leftSideEnemyBullet2.end.y = enemy.pos.y + (leftSideEnemyBullet2.height * 1.2f);
+
+					// 弾の初期位置を設定
+					leftSideEnemyBullet2.pos.x = leftSideEnemyBullet2.start.x;
+					leftSideEnemyBullet2.pos.y = leftSideEnemyBullet2.start.y;
+
+					leftSideEnemyBullet2.isBulletShot = false;
+					leftSideEnemyBullet2.interpolation = false;
 				}
 			}
 		}
+
+#pragma endregion
+
+#pragma endregion
+
+#pragma region --- 右辺の弾の更新処理 ---
+
+		// --- 敵1の右辺の弾 ---
+		if (!rightSideEnemyBullet1.isBulletShot) {
+
+			rightSideEnemyBullet1.length = 0.0f;
+			rightSideEnemyBullet1.t = 0.0f;
+			rightSideEnemyBullet1.easedT = 0.0f;
+
+			player.dir.x = player.pos.x - enemy.pos.x;
+			player.dir.y = player.pos.y - enemy.pos.y;
+
+			rightSideEnemyBullet1.length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+			if (rightSideEnemyBullet1.length > 0.0f) {
+				rightSideEnemyBullet1.velocity.x = (player.dir.x / rightSideEnemyBullet1.length) * rightSideEnemyBullet1.speed;
+				rightSideEnemyBullet1.velocity.y = (player.dir.y / rightSideEnemyBullet1.length) * rightSideEnemyBullet1.speed;
+			}
+
+			rightSideEnemyBullet1.isBulletShot = true;
+		}
+
+		if (rightSideEnemyBullet1.isBulletShot) {
+
+			if (!rightSideEnemyBullet1.interpolation) {
+
+				rightSideEnemyBullet1.t += 0.008f;
+
+				if (rightSideEnemyBullet1.t >= 1.0f) {
+					rightSideEnemyBullet1.t = 1.0f;
+					rightSideEnemyBullet1.interpolation = true;
+				}
+
+				rightSideEnemyBullet1.easedT = 1.0f - powf(1.0f - rightSideEnemyBullet1.t, 3.0f);
+				rightSideEnemyBullet1.pos.x = (1.0f - rightSideEnemyBullet1.easedT) * rightSideEnemyBullet1.start.x + rightSideEnemyBullet1.easedT * rightSideEnemyBullet1.end.x;
+				rightSideEnemyBullet1.pos.y = (1.0f - rightSideEnemyBullet1.easedT) * rightSideEnemyBullet1.start.y + rightSideEnemyBullet1.easedT * rightSideEnemyBullet1.end.y;
+
+			} else {
+
+				rightSideEnemyBullet1.pos.x += rightSideEnemyBullet1.velocity.x;
+				rightSideEnemyBullet1.pos.y += rightSideEnemyBullet1.velocity.y;
+
+				if (rightSideEnemyBullet1.pos.y <= 0.0f ||
+					rightSideEnemyBullet1.pos.x <= 0.0f ||
+					rightSideEnemyBullet1.pos.x >= 1280.0f ||
+					rightSideEnemyBullet1.pos.y + rightSideEnemyBullet1.height >= 720.0f) {
+
+					// 弾の開始座標 (敵の右端から発射)
+					rightSideEnemyBullet1.start.x = (enemy.pos.x + enemy.width) - rightSideEnemyBullet1.width;
+					rightSideEnemyBullet1.start.y = enemy.pos.y + (rightSideEnemyBullet1.height * 1.2f);
+
+					// 弾の終了座標 (右方向へ進む)
+					rightSideEnemyBullet1.end.x = ((enemy.pos.x + enemy.width) + rightSideEnemyBullet1.width);
+					rightSideEnemyBullet1.end.y = enemy.pos.y + (rightSideEnemyBullet1.height * 1.2f);
+
+					// 弾の現在座標
+					rightSideEnemyBullet1.pos.x = rightSideEnemyBullet1.start.x;
+					rightSideEnemyBullet1.pos.y = rightSideEnemyBullet1.start.y;
+					rightSideEnemyBullet1.isBulletShot = false;
+					rightSideEnemyBullet1.interpolation = false;
+				}
+			}
+		}
+
+#pragma endregion
+
+#pragma region --- 上辺の弾の更新処理 ---
 
 		// --- 敵の上辺の弾 ---
 		for (int i = 0; i < topSideEnemyBullet[0].columns; ++i) {
 
 			if (!topSideEnemyBullet[i].isBulletShot) {
-				topSideEnemyBullet[i].isBulletShot = true;
+
 				topSideEnemyBullet[i].length = 0.0f;
 				topSideEnemyBullet[i].t = 0.0f;
 				topSideEnemyBullet[i].easedT = 0.0f;
@@ -693,6 +1137,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					topSideEnemyBullet[i].velocity.x = (player.dir.x / topSideEnemyBullet[i].length) * topSideEnemyBullet[i].speed;
 					topSideEnemyBullet[i].velocity.y = (player.dir.y / topSideEnemyBullet[i].length) * topSideEnemyBullet[i].speed;
 				}
+
+				topSideEnemyBullet[i].isBulletShot = true;
 			}
 
 			if (topSideEnemyBullet[i].isBulletShot) {
@@ -707,7 +1153,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					}
 
 					topSideEnemyBullet[i].easedT = 1.0f - powf(1.0f - topSideEnemyBullet[i].t, 3.0f);
-
 					topSideEnemyBullet[i].pos.x = (1.0f - topSideEnemyBullet[i].easedT) * topSideEnemyBullet[i].start.x + topSideEnemyBullet[i].easedT * topSideEnemyBullet[i].end.x;
 					topSideEnemyBullet[i].pos.y = (1.0f - topSideEnemyBullet[i].easedT) * topSideEnemyBullet[i].start.y + topSideEnemyBullet[i].easedT * topSideEnemyBullet[i].end.y;
 
@@ -721,8 +1166,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						topSideEnemyBullet[i].pos.x >= 1280.0f ||
 						topSideEnemyBullet[i].pos.y + topSideEnemyBullet[i].height >= 720.0f) {
 
+						// 弾の開始座標 (敵の上端から発射)
+						topSideEnemyBullet[i].start.x = enemy.pos.x + (topSideEnemyBullet[i].width * 2.6f);
+						topSideEnemyBullet[i].start.y = enemy.pos.y;
+
+						// 弾の終了座標 (上方向へ進む)
+						topSideEnemyBullet[i].end.x = enemy.pos.x + (topSideEnemyBullet[i].width * 2.6f);
+						topSideEnemyBullet[i].end.y = enemy.pos.y - (topSideEnemyBullet[i].height * 2.0f);
+
+						// 弾の現在座標
 						topSideEnemyBullet[i].pos.x = topSideEnemyBullet[i].start.x;
 						topSideEnemyBullet[i].pos.y = topSideEnemyBullet[i].start.y;
+
 						topSideEnemyBullet[i].isBulletShot = false;
 						topSideEnemyBullet[i].interpolation = false;
 					}
@@ -730,11 +1185,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
+#pragma endregion
+
+#pragma region --- 上辺の弾の更新処理 ---
+
 		// --- 敵の下辺の弾 ---
 		for (int i = 0; i < bottomSideEnemyBullet[0].columns; ++i) {
 
 			if (!bottomSideEnemyBullet[i].isBulletShot) {
-				bottomSideEnemyBullet[i].isBulletShot = true;
+
 				bottomSideEnemyBullet[i].length = 0.0f;
 				bottomSideEnemyBullet[i].t = 0.0f;
 				bottomSideEnemyBullet[i].easedT = 0.0f;
@@ -747,6 +1206,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					bottomSideEnemyBullet[i].velocity.x = (player.dir.x / bottomSideEnemyBullet[i].length) * bottomSideEnemyBullet[i].speed;
 					bottomSideEnemyBullet[i].velocity.y = (player.dir.y / bottomSideEnemyBullet[i].length) * bottomSideEnemyBullet[i].speed;
 				}
+
+				bottomSideEnemyBullet[i].isBulletShot = true;
 			}
 
 			if (bottomSideEnemyBullet[i].isBulletShot) {
@@ -761,7 +1222,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					}
 
 					bottomSideEnemyBullet[i].easedT = 1.0f - powf(1.0f - bottomSideEnemyBullet[i].t, 3.0f);
-
 					bottomSideEnemyBullet[i].pos.x = (1.0f - bottomSideEnemyBullet[i].easedT) * bottomSideEnemyBullet[i].start.x + bottomSideEnemyBullet[i].easedT * bottomSideEnemyBullet[i].end.x;
 					bottomSideEnemyBullet[i].pos.y = (1.0f - bottomSideEnemyBullet[i].easedT) * bottomSideEnemyBullet[i].start.y + bottomSideEnemyBullet[i].easedT * bottomSideEnemyBullet[i].end.y;
 
@@ -775,8 +1235,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						bottomSideEnemyBullet[i].pos.x >= 1280.0f ||
 						bottomSideEnemyBullet[i].pos.y + bottomSideEnemyBullet[i].height >= 720.0f) {
 
+						// 弾の開始座標 (敵の下端から発射)
+						bottomSideEnemyBullet[i].start.x = enemy.pos.x + (bottomSideEnemyBullet[i].width * 2.6f);
+						bottomSideEnemyBullet[i].start.y = (enemy.pos.y + enemy.height) - bottomSideEnemyBullet[i].height;
+
+						// 弾の終了座標 (下方向へ進む)
+						bottomSideEnemyBullet[i].end.x = enemy.pos.x + (bottomSideEnemyBullet[i].width * 2.6f);
+						bottomSideEnemyBullet[i].end.y = (enemy.pos.y + enemy.height) + bottomSideEnemyBullet[i].height;
+
+						// 弾の現在座標
 						bottomSideEnemyBullet[i].pos.x = bottomSideEnemyBullet[i].start.x;
 						bottomSideEnemyBullet[i].pos.y = bottomSideEnemyBullet[i].start.y;
+
 						bottomSideEnemyBullet[i].isBulletShot = false;
 						bottomSideEnemyBullet[i].interpolation = false;
 					}
@@ -784,9 +1254,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
+#pragma endregion
+
+#pragma region --- 敵の左上の弾 ---
+
 		// --- 敵の左上の弾 ---
 		if (!leftTopEnemyBullet.isBulletShot) {
-			leftTopEnemyBullet.isBulletShot = true;
+
 			leftTopEnemyBullet.length = 0.0f;
 			leftTopEnemyBullet.t = 0.0f;
 			leftTopEnemyBullet.easedT = 0.0f;
@@ -799,6 +1273,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				leftTopEnemyBullet.velocity.x = (player.dir.x / leftTopEnemyBullet.length) * leftTopEnemyBullet.speed;
 				leftTopEnemyBullet.velocity.y = (player.dir.y / leftTopEnemyBullet.length) * leftTopEnemyBullet.speed;
 			}
+
+			leftTopEnemyBullet.isBulletShot = true;
 		}
 
 		if (leftTopEnemyBullet.isBulletShot) {
@@ -813,7 +1289,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 
 				leftTopEnemyBullet.easedT = 1.0f - powf(1.0f - leftTopEnemyBullet.t, 3.0f);
-
 				leftTopEnemyBullet.pos.x = (1.0f - leftTopEnemyBullet.easedT) * leftTopEnemyBullet.start.x + leftTopEnemyBullet.easedT * leftTopEnemyBullet.end.x;
 				leftTopEnemyBullet.pos.y = (1.0f - leftTopEnemyBullet.easedT) * leftTopEnemyBullet.start.y + leftTopEnemyBullet.easedT * leftTopEnemyBullet.end.y;
 
@@ -827,17 +1302,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					leftTopEnemyBullet.pos.x >= 1280.0f ||
 					leftTopEnemyBullet.pos.y + leftTopEnemyBullet.height >= 720.0f) {
 
+					// 開始座標 (敵の左上)
+					leftTopEnemyBullet.start.x = enemy.pos.x;
+					leftTopEnemyBullet.start.y = enemy.pos.y;
+
+					// 終了座標 (左上方向へ進む)
+					leftTopEnemyBullet.end.x = enemy.pos.x - (leftTopEnemyBullet.width * 2.0f);
+					leftTopEnemyBullet.end.y = enemy.pos.y - (leftTopEnemyBullet.height * 2.0f);
+
+					// 現在座標の初期化
 					leftTopEnemyBullet.pos.x = leftTopEnemyBullet.start.x;
 					leftTopEnemyBullet.pos.y = leftTopEnemyBullet.start.y;
+
 					leftTopEnemyBullet.isBulletShot = false;
 					leftTopEnemyBullet.interpolation = false;
 				}
 			}
 		}
 
+#pragma endregion
+
+#pragma region --- 敵の右上の弾 ---
+
 		// --- 敵の右上の弾 ---
 		if (!rightTopEnemyBullet.isBulletShot) {
-			rightTopEnemyBullet.isBulletShot = true;
+
 			rightTopEnemyBullet.length = 0.0f;
 			rightTopEnemyBullet.t = 0.0f;
 			rightTopEnemyBullet.easedT = 0.0f;
@@ -850,6 +1339,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				rightTopEnemyBullet.velocity.x = (player.dir.x / rightTopEnemyBullet.length) * rightTopEnemyBullet.speed;
 				rightTopEnemyBullet.velocity.y = (player.dir.y / rightTopEnemyBullet.length) * rightTopEnemyBullet.speed;
 			}
+
+			rightTopEnemyBullet.isBulletShot = true;
 		}
 
 		if (rightTopEnemyBullet.isBulletShot) {
@@ -864,7 +1355,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 
 				rightTopEnemyBullet.easedT = 1.0f - powf(1.0f - rightTopEnemyBullet.t, 3.0f);
-
 				rightTopEnemyBullet.pos.x = (1.0f - rightTopEnemyBullet.easedT) * rightTopEnemyBullet.start.x + rightTopEnemyBullet.easedT * rightTopEnemyBullet.end.x;
 				rightTopEnemyBullet.pos.y = (1.0f - rightTopEnemyBullet.easedT) * rightTopEnemyBullet.start.y + rightTopEnemyBullet.easedT * rightTopEnemyBullet.end.y;
 
@@ -878,17 +1368,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					rightTopEnemyBullet.pos.x >= 1280.0f ||
 					rightTopEnemyBullet.pos.y + rightTopEnemyBullet.height >= 720.0f) {
 
+					// 開始座標 (敵の右上)
+					rightTopEnemyBullet.start.x = (enemy.pos.x + enemy.width) - rightTopEnemyBullet.width;
+					rightTopEnemyBullet.start.y = enemy.pos.y;
+
+					// 終了座標 (右上方向へ進む)
+					rightTopEnemyBullet.end.x = ((enemy.pos.x + enemy.width) - rightTopEnemyBullet.width) + (rightTopEnemyBullet.width * 2.0f);
+					rightTopEnemyBullet.end.y = enemy.pos.y - (rightTopEnemyBullet.height * 2.0f);
+
+					// 現在座標の初期化
 					rightTopEnemyBullet.pos.x = rightTopEnemyBullet.start.x;
 					rightTopEnemyBullet.pos.y = rightTopEnemyBullet.start.y;
+
 					rightTopEnemyBullet.isBulletShot = false;
 					rightTopEnemyBullet.interpolation = false;
 				}
 			}
 		}
 
+#pragma endregion
+
 		// --- 敵の左下の弾 ---
 		if (!leftBottomEnemyBullet.isBulletShot) {
-			leftBottomEnemyBullet.isBulletShot = true;
+
 			leftBottomEnemyBullet.length = 0.0f;
 			leftBottomEnemyBullet.t = 0.0f;
 			leftBottomEnemyBullet.easedT = 0.0f;
@@ -897,10 +1399,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			player.dir.y = player.pos.y - enemy.pos.y;
 
 			leftBottomEnemyBullet.length = sqrtf(player.dir.x * player.dir.x + player.dir.y * player.dir.y);
+
 			if (leftBottomEnemyBullet.length > 0.0f) {
 				leftBottomEnemyBullet.velocity.x = (player.dir.x / leftBottomEnemyBullet.length) * leftBottomEnemyBullet.speed;
 				leftBottomEnemyBullet.velocity.y = (player.dir.y / leftBottomEnemyBullet.length) * leftBottomEnemyBullet.speed;
 			}
+
+			leftBottomEnemyBullet.isBulletShot = true;
 		}
 
 		if (leftBottomEnemyBullet.isBulletShot) {
@@ -929,8 +1434,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					leftBottomEnemyBullet.pos.x >= 1280.0f ||
 					leftBottomEnemyBullet.pos.y + leftBottomEnemyBullet.height >= 720.0f) {
 
+					// 開始座標 (敵の左下)
+					leftBottomEnemyBullet.start.x = enemy.pos.x;
+					leftBottomEnemyBullet.start.y = (enemy.pos.y + enemy.height) - leftBottomEnemyBullet.height;
+
+					// 終了座標 (左下方向へ進む)
+					leftBottomEnemyBullet.end.x = enemy.pos.x - (leftBottomEnemyBullet.width * 2.0f);
+					leftBottomEnemyBullet.end.y = ((enemy.pos.y + enemy.height) - leftBottomEnemyBullet.height) + (leftBottomEnemyBullet.height * 2.0f);
+
+					// 現在座標の初期化
 					leftBottomEnemyBullet.pos.x = leftBottomEnemyBullet.start.x;
 					leftBottomEnemyBullet.pos.y = leftBottomEnemyBullet.start.y;
+
 					leftBottomEnemyBullet.isBulletShot = false;
 					leftBottomEnemyBullet.interpolation = false;
 				}
@@ -939,7 +1454,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// --- 敵の右下の弾 ---
 		if (!rightBottomEnemyBullet.isBulletShot) {
-			rightBottomEnemyBullet.isBulletShot = true;
+
 			rightBottomEnemyBullet.length = 0.0f;
 			rightBottomEnemyBullet.t = 0.0f;
 			rightBottomEnemyBullet.easedT = 0.0f;
@@ -952,6 +1467,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				rightBottomEnemyBullet.velocity.x = (player.dir.x / rightBottomEnemyBullet.length) * rightBottomEnemyBullet.speed;
 				rightBottomEnemyBullet.velocity.y = (player.dir.y / rightBottomEnemyBullet.length) * rightBottomEnemyBullet.speed;
 			}
+
+			rightBottomEnemyBullet.isBulletShot = true;
 		}
 
 		if (rightBottomEnemyBullet.isBulletShot) {
@@ -966,7 +1483,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 
 				rightBottomEnemyBullet.easedT = 1.0f - powf(1.0f - rightBottomEnemyBullet.t, 3.0f);
-
 				rightBottomEnemyBullet.pos.x = (1.0f - rightBottomEnemyBullet.easedT) * rightBottomEnemyBullet.start.x + rightBottomEnemyBullet.easedT * rightBottomEnemyBullet.end.x;
 				rightBottomEnemyBullet.pos.y = (1.0f - rightBottomEnemyBullet.easedT) * rightBottomEnemyBullet.start.y + rightBottomEnemyBullet.easedT * rightBottomEnemyBullet.end.y;
 
@@ -980,13 +1496,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					rightBottomEnemyBullet.pos.x >= 1280.0f ||
 					rightBottomEnemyBullet.pos.y + rightBottomEnemyBullet.height >= 720.0f) {
 
+					// 開始座標 (敵の右下)
+					rightBottomEnemyBullet.start.x = (enemy.pos.x + enemy.width) - rightBottomEnemyBullet.width;
+					rightBottomEnemyBullet.start.y = (enemy.pos.y + enemy.height) - rightBottomEnemyBullet.height;
+
+					// 終了座標 (右下方向へ進む)
+					rightBottomEnemyBullet.end.x = ((enemy.pos.x + enemy.width) - rightBottomEnemyBullet.width) + (rightBottomEnemyBullet.width * 2.0f);
+					rightBottomEnemyBullet.end.y = ((enemy.pos.y + enemy.height) - rightBottomEnemyBullet.height) + (rightBottomEnemyBullet.height * 2.0f);
+
+					// 現在座標の初期化
 					rightBottomEnemyBullet.pos.x = rightBottomEnemyBullet.start.x;
 					rightBottomEnemyBullet.pos.y = rightBottomEnemyBullet.start.y;
+
 					rightBottomEnemyBullet.isBulletShot = false;
 					rightBottomEnemyBullet.interpolation = false;
 				}
 			}
 		}
+
 
 		// 敵
 		// 左上
@@ -1160,6 +1687,337 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		rightBottomEnemyBullet.vertex.rightBottom.x = rightBottomEnemyBullet.pos.x + rightBottomEnemyBullet.width;
 		rightBottomEnemyBullet.vertex.rightBottom.y = rightBottomEnemyBullet.pos.y + rightBottomEnemyBullet.height;
 
+
+		// player
+		// 左上
+		player.vertex.leftTop.x = player.pos.x;
+		player.vertex.leftTop.y = player.pos.y;
+
+		// 右上
+		player.vertex.rightTop.x = player.pos.x + player.width;
+		player.vertex.rightTop.y = player.pos.y;
+
+		// 左下
+		player.vertex.leftBottom.x = player.pos.x;
+		player.vertex.leftBottom.y = player.pos.y + player.height;
+
+		// 右下
+		player.vertex.rightBottom.x = player.pos.x + player.width;
+		player.vertex.rightBottom.y = player.pos.y + player.width;
+
+		// 敵弾と自機の当たり判定
+		// 左
+		for (int i = 0; i < leftSideEnemyBullet[0].columns; ++i) {
+
+			if ((player.vertex.leftTop.x) < (leftSideEnemyBullet[i].vertex.rightBottom.x) && (leftSideEnemyBullet[i].vertex.leftTop.x) < (player.vertex.rightBottom.x)) {
+				leftSideEnemyBullet[i].isHitX = true;
+			} else {
+				leftSideEnemyBullet[i].isHitX = false;
+			}
+
+			if ((player.vertex.leftTop.y) < (leftSideEnemyBullet[i].vertex.rightBottom.y) && (leftSideEnemyBullet[i].vertex.leftTop.y) < (player.vertex.rightBottom.y)) {
+				leftSideEnemyBullet[i].isHitY = true;
+			} else {
+				leftSideEnemyBullet[i].isHitY = false;
+			}
+
+			if (leftSideEnemyBullet[i].isHitX && leftSideEnemyBullet[i].isHitY) {
+
+				leftSideEnemyBullet[i].isHit = true;
+
+				// 弾の開始位置（敵の左辺）
+				leftSideEnemyBullet[i].start.x = enemy.pos.x;
+				leftSideEnemyBullet[i].start.y = enemy.pos.y + (leftSideEnemyBullet[i].height * 1.2f);
+
+				// 弾の終了位置（左方向への移動を設定）
+				leftSideEnemyBullet[i].end.x = enemy.pos.x - (leftSideEnemyBullet[i].width * 2.0f);
+				leftSideEnemyBullet[i].end.y = enemy.pos.y + (leftSideEnemyBullet[i].height * 1.2f);
+
+				// 弾の初期位置を設定
+				leftSideEnemyBullet[i].pos.x = leftSideEnemyBullet[i].start.x;
+				leftSideEnemyBullet[i].pos.y = leftSideEnemyBullet[i].start.y;
+
+
+
+				leftSideEnemyBullet[i].isBulletShot = false;
+				leftSideEnemyBullet[i].interpolation = false;
+
+			} else {
+				leftSideEnemyBullet[i].isHit = false;
+			}
+		}
+
+		// 右
+		for (int i = 0; i < rightSideEnemyBullet[0].columns; ++i) {
+
+			if ((player.vertex.leftTop.x) < (rightSideEnemyBullet[i].vertex.rightBottom.x) && (rightSideEnemyBullet[i].vertex.leftTop.x) < (player.vertex.rightBottom.x)) {
+				rightSideEnemyBullet[i].isHitX = true;
+			} else {
+				rightSideEnemyBullet[i].isHitX = false;
+			}
+
+			if ((player.vertex.leftTop.y) < (rightSideEnemyBullet[i].vertex.rightBottom.y) && (rightSideEnemyBullet[i].vertex.leftTop.y) < (player.vertex.rightBottom.y)) {
+				rightSideEnemyBullet[i].isHitY = true;
+			} else {
+				rightSideEnemyBullet[i].isHitY = false;
+			}
+
+			if (rightSideEnemyBullet[i].isHitX && rightSideEnemyBullet[i].isHitY) {
+
+				rightSideEnemyBullet[i].isHit = true;
+
+				// 弾の開始座標 (敵の右端から発射)
+				rightSideEnemyBullet[i].start.x = (enemy.pos.x + enemy.width) - rightSideEnemyBullet[i].width;
+				rightSideEnemyBullet[i].start.y = enemy.pos.y + (rightSideEnemyBullet[i].height * 1.2f);
+
+				// 弾の終了座標 (右方向へ進む)
+				rightSideEnemyBullet[i].end.x = ((enemy.pos.x + enemy.width) + rightSideEnemyBullet[i].width);
+				rightSideEnemyBullet[i].end.y = enemy.pos.y + (rightSideEnemyBullet[i].height * 1.2f);
+
+				// 弾の現在座標
+				rightSideEnemyBullet[i].pos.x = rightSideEnemyBullet[i].start.x;
+				rightSideEnemyBullet[i].pos.y = rightSideEnemyBullet[i].start.y;
+
+
+
+				rightSideEnemyBullet[i].isBulletShot = false;
+				rightSideEnemyBullet[i].interpolation = false;
+			} else {
+				rightSideEnemyBullet[i].isHit = false;
+			}
+		}
+
+		// 上
+		for (int i = 0; i < topSideEnemyBullet[0].columns; ++i) {
+
+			if ((player.vertex.leftTop.x) < (topSideEnemyBullet[i].vertex.rightBottom.x) && (topSideEnemyBullet[i].vertex.leftTop.x) < (player.vertex.rightBottom.x)) {
+				topSideEnemyBullet[i].isHitX = true;
+			} else {
+				topSideEnemyBullet[i].isHitX = false;
+			}
+
+			if ((player.vertex.leftTop.y) < (topSideEnemyBullet[i].vertex.rightBottom.y) && (topSideEnemyBullet[i].vertex.leftTop.y) < (player.vertex.rightBottom.y)) {
+				topSideEnemyBullet[i].isHitY = true;
+			} else {
+				topSideEnemyBullet[i].isHitY = false;
+			}
+
+			if (topSideEnemyBullet[i].isHitX && topSideEnemyBullet[i].isHitY) {
+
+				topSideEnemyBullet[i].isHit = true;
+
+				// 弾の開始座標 (敵の上端から発射)
+				topSideEnemyBullet[i].start.x = enemy.pos.x + (topSideEnemyBullet[i].width * 2.6f);
+				topSideEnemyBullet[i].start.y = enemy.pos.y;
+
+				// 弾の終了座標 (上方向へ進む)
+				topSideEnemyBullet[i].end.x = enemy.pos.x + (topSideEnemyBullet[i].width * 2.6f);
+				topSideEnemyBullet[i].end.y = enemy.pos.y - (topSideEnemyBullet[i].height * 2.0f);
+
+				// 弾の現在座標
+				topSideEnemyBullet[i].pos.x = topSideEnemyBullet[i].start.x;
+				topSideEnemyBullet[i].pos.y = topSideEnemyBullet[i].start.y;
+
+
+
+				topSideEnemyBullet[i].isBulletShot = false;
+				topSideEnemyBullet[i].interpolation = false;
+
+			} else {
+				topSideEnemyBullet[i].isHit = false;
+			}
+		}
+
+		// 下
+		for (int i = 0; i < bottomSideEnemyBullet[0].columns; ++i) {
+
+			if ((player.vertex.leftTop.x) < (bottomSideEnemyBullet[i].vertex.rightBottom.x) && (bottomSideEnemyBullet[i].vertex.leftTop.x) < (player.vertex.rightBottom.x)) {
+				bottomSideEnemyBullet[i].isHitX = true;
+			} else {
+				bottomSideEnemyBullet[i].isHitX = false;
+			}
+
+			if ((player.vertex.leftTop.y) < (bottomSideEnemyBullet[i].vertex.rightBottom.y) && (bottomSideEnemyBullet[i].vertex.leftTop.y) < (player.vertex.rightBottom.y)) {
+				bottomSideEnemyBullet[i].isHitY = true;
+			} else {
+				bottomSideEnemyBullet[i].isHitY = false;
+			}
+
+			if (bottomSideEnemyBullet[i].isHitX && bottomSideEnemyBullet[i].isHitY) {
+
+				bottomSideEnemyBullet[i].isHit = true;
+
+				// 弾の開始座標 (敵の下端から発射)
+				bottomSideEnemyBullet[i].start.x = enemy.pos.x + (bottomSideEnemyBullet[i].width * 2.6f);
+				bottomSideEnemyBullet[i].start.y = (enemy.pos.y + enemy.height) - bottomSideEnemyBullet[i].height;
+
+				// 弾の終了座標 (下方向へ進む)
+				bottomSideEnemyBullet[i].end.x = enemy.pos.x + (bottomSideEnemyBullet[i].width * 2.6f);
+				bottomSideEnemyBullet[i].end.y = (enemy.pos.y + enemy.height) + bottomSideEnemyBullet[i].height;
+
+				// 弾の現在座標
+				bottomSideEnemyBullet[i].pos.x = bottomSideEnemyBullet[i].start.x;
+				bottomSideEnemyBullet[i].pos.y = bottomSideEnemyBullet[i].start.y;
+
+
+
+				bottomSideEnemyBullet[i].isBulletShot = false;
+				bottomSideEnemyBullet[i].interpolation = false;
+			} else {
+				bottomSideEnemyBullet[i].isHit = false;
+			}
+		}
+
+		// 左上
+		if ((player.vertex.leftTop.x) < (leftTopEnemyBullet.vertex.rightBottom.x) && (leftTopEnemyBullet.vertex.leftTop.x) < (player.vertex.rightBottom.x)) {
+			leftTopEnemyBullet.isHitX = true;
+		} else {
+			leftTopEnemyBullet.isHitX = false;
+		}
+
+		if ((player.vertex.leftTop.y) < (leftTopEnemyBullet.vertex.rightBottom.y) && (leftTopEnemyBullet.vertex.leftTop.y) < (player.vertex.rightBottom.y)) {
+			leftTopEnemyBullet.isHitY = true;
+		} else {
+			leftTopEnemyBullet.isHitY = false;
+		}
+
+		if (leftTopEnemyBullet.isHitX && leftTopEnemyBullet.isHitY) {
+
+			leftTopEnemyBullet.isHit = true;
+
+			// 開始座標 (敵の左上)
+			leftTopEnemyBullet.start.x = enemy.pos.x;
+			leftTopEnemyBullet.start.y = enemy.pos.y;
+
+			// 終了座標 (左上方向へ進む)
+			leftTopEnemyBullet.end.x = enemy.pos.x - (leftTopEnemyBullet.width * 2.0f);
+			leftTopEnemyBullet.end.y = enemy.pos.y - (leftTopEnemyBullet.height * 2.0f);
+
+			// 現在座標の初期化
+			leftTopEnemyBullet.pos.x = leftTopEnemyBullet.start.x;
+			leftTopEnemyBullet.pos.y = leftTopEnemyBullet.start.y;
+
+
+
+			leftTopEnemyBullet.isBulletShot = false;
+			leftTopEnemyBullet.interpolation = false;
+		} else {
+			leftTopEnemyBullet.isHit = false;
+		}
+
+		// 右上
+		if ((player.vertex.leftTop.x) < (rightTopEnemyBullet.vertex.rightBottom.x) && (rightTopEnemyBullet.vertex.leftTop.x) < (player.vertex.rightBottom.x)) {
+			rightTopEnemyBullet.isHitX = true;
+		} else {
+			rightTopEnemyBullet.isHitX = false;
+		}
+
+		if ((player.vertex.leftTop.y) < (rightTopEnemyBullet.vertex.rightBottom.y) && (rightTopEnemyBullet.vertex.leftTop.y) < (player.vertex.rightBottom.y)) {
+			rightTopEnemyBullet.isHitY = true;
+		} else {
+			rightTopEnemyBullet.isHitY = false;
+		}
+
+		if (rightTopEnemyBullet.isHitX && rightTopEnemyBullet.isHitY) {
+
+			rightTopEnemyBullet.isHit = true;
+
+			// 開始座標 (敵の右上)
+			rightTopEnemyBullet.start.x = (enemy.pos.x + enemy.width) - rightTopEnemyBullet.width;
+			rightTopEnemyBullet.start.y = enemy.pos.y;
+
+			// 終了座標 (右上方向へ進む)
+			rightTopEnemyBullet.end.x = ((enemy.pos.x + enemy.width) - rightTopEnemyBullet.width) + (rightTopEnemyBullet.width * 2.0f);
+			rightTopEnemyBullet.end.y = enemy.pos.y - (rightTopEnemyBullet.height * 2.0f);
+
+			// 現在座標の初期化
+			rightTopEnemyBullet.pos.x = rightTopEnemyBullet.start.x;
+			rightTopEnemyBullet.pos.y = rightTopEnemyBullet.start.y;
+
+
+
+			rightTopEnemyBullet.isBulletShot = false;
+			rightTopEnemyBullet.interpolation = false;
+		} else {
+			rightTopEnemyBullet.isHit = false;
+		}
+
+		// 左下
+		if ((player.vertex.leftTop.x) < (leftBottomEnemyBullet.vertex.rightBottom.x) && (leftBottomEnemyBullet.vertex.leftTop.x) < (player.vertex.rightBottom.x)) {
+			leftBottomEnemyBullet.isHitX = true;
+		} else {
+			leftBottomEnemyBullet.isHitX = false;
+		}
+
+		if ((player.vertex.leftTop.y) < (leftBottomEnemyBullet.vertex.rightBottom.y) && (leftBottomEnemyBullet.vertex.leftTop.y) < (player.vertex.rightBottom.y)) {
+			leftBottomEnemyBullet.isHitY = true;
+		} else {
+			leftBottomEnemyBullet.isHitY = false;
+		}
+
+		if (leftBottomEnemyBullet.isHitX && leftBottomEnemyBullet.isHitY) {
+
+			leftBottomEnemyBullet.isHit = true;
+
+			// 開始座標 (敵の左下)
+			leftBottomEnemyBullet.start.x = enemy.pos.x;
+			leftBottomEnemyBullet.start.y = (enemy.pos.y + enemy.height) - leftBottomEnemyBullet.height;
+
+			// 終了座標 (左下方向へ進む)
+			leftBottomEnemyBullet.end.x = enemy.pos.x - (leftBottomEnemyBullet.width * 2.0f);
+			leftBottomEnemyBullet.end.y = ((enemy.pos.y + enemy.height) - leftBottomEnemyBullet.height) + (leftBottomEnemyBullet.height * 2.0f);
+
+			// 現在座標の初期化
+			leftBottomEnemyBullet.pos.x = leftBottomEnemyBullet.start.x;
+			leftBottomEnemyBullet.pos.y = leftBottomEnemyBullet.start.y;
+
+
+
+			leftBottomEnemyBullet.isBulletShot = false;
+			leftBottomEnemyBullet.interpolation = false;
+
+		} else {
+			leftBottomEnemyBullet.isHit = false;
+		}
+
+		// 右下
+		if ((player.vertex.leftTop.x) < (rightBottomEnemyBullet.vertex.rightBottom.x) && (rightBottomEnemyBullet.vertex.leftTop.x) < (player.vertex.rightBottom.x)) {
+			rightBottomEnemyBullet.isHitX = true;
+		} else {
+			rightBottomEnemyBullet.isHitX = false;
+		}
+
+		if ((player.vertex.leftTop.y) < (rightBottomEnemyBullet.vertex.rightBottom.y) && (rightBottomEnemyBullet.vertex.leftTop.y) < (player.vertex.rightBottom.y)) {
+			rightBottomEnemyBullet.isHitY = true;
+		} else {
+			rightBottomEnemyBullet.isHitY = false;
+		}
+
+		if (rightBottomEnemyBullet.isHitX && rightBottomEnemyBullet.isHitY) {
+
+			rightBottomEnemyBullet.isHit = true;
+
+			// 開始座標 (敵の右下)
+			rightBottomEnemyBullet.start.x = (enemy.pos.x + enemy.width) - rightBottomEnemyBullet.width;
+			rightBottomEnemyBullet.start.y = (enemy.pos.y + enemy.height) - rightBottomEnemyBullet.height;
+
+			// 終了座標 (右下方向へ進む)
+			rightBottomEnemyBullet.end.x = ((enemy.pos.x + enemy.width) - rightBottomEnemyBullet.width) + (rightBottomEnemyBullet.width * 2.0f);
+			rightBottomEnemyBullet.end.y = ((enemy.pos.y + enemy.height) - rightBottomEnemyBullet.height) + (rightBottomEnemyBullet.height * 2.0f);
+
+			// 現在座標の初期化
+			rightBottomEnemyBullet.pos.x = rightBottomEnemyBullet.start.x;
+			rightBottomEnemyBullet.pos.y = rightBottomEnemyBullet.start.y;
+
+
+
+			rightBottomEnemyBullet.isBulletShot = false;
+			rightBottomEnemyBullet.interpolation = false;
+
+		} else {
+			rightBottomEnemyBullet.isHit = false;
+		}
+
 		// アニメーション
 		enemy.frameCount++;
 		if (enemy.frameCount >= 2) {
@@ -1183,12 +2041,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		//platerの描画
-		Novice::DrawBox(
+		Novice::DrawSprite(
 			int(player.pos.x),
 			int(player.pos.y),
-			int(player.radius),
-			int(player.radius),
-			0.0f, WHITE, kFillModeSolid
+			psychicTexture,
+			1, 1,
+			0.0f, 0xFFFFFFFF
 		);
 
 		// 敵の左辺の弾
@@ -1214,8 +2072,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 		}
-
-		
 
 		// 敵の右辺の弾
 		for (int j = 0; j < rightSideEnemyBullet[0].columns; ++j) {
@@ -1264,7 +2120,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 		}
-		
+
 		// 敵の下辺の弾
 		for (int j = 0; j < bottomSideEnemyBullet[0].columns; ++j) {
 			if (bottomSideEnemyBullet[j].isBulletShot) {
@@ -1288,7 +2144,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 		}
-		
+
 		// 左上
 		if (leftTopEnemyBullet.isBulletShot) {
 			Novice::DrawQuad(
