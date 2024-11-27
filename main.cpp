@@ -15,6 +15,8 @@ struct Player
 	Vector2 pos;
 	float radius;
 	float speed;
+	float width;
+	float height;
 };
 struct PlayerBullet
 {
@@ -98,6 +100,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	enemy.speed = 8.0f;
 	//ボスのHP
 	int enemyCount = 40;
+	//プレイヤーのHP
+	int playerCount = 5;
+
 	///ふり幅///
 	float amplitude = 540.0f;//ふり幅、波の高さ（大きさ）
 	float theta = 0.0f;
@@ -117,27 +122,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ワープするカウント
 	float enemyTimer = 0.0f;
 
-	////タイトルBGM/////
-	int TitleBGM = Novice::LoadAudio("./Resources/Sounds/title.mp3");
-
-
-	//////操作説明////////
-	int SousaBGM = Novice::LoadAudio("./Resources/Sounds/sousa.mp3");
-
-
-
-	////バトルBGM/////
-	int BoseBGM = Novice::LoadAudio("./Resources/Sounds/bose.mp3");
-
-	//BGMの変数
-	int playHandle = -1;
-
-
-
+	
 
 	////////////////////////
 
-	//敵の移動のためのブロック
+	///敵の移動のためのブロック///
 	Enemy enemyBox = 
 	{
 	1000.0f,
@@ -145,6 +134,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	200.0f,
 	100.0f,
 	};
+	//////////////////////////
+
+
+	//プレイヤーのHP//
+
+	Player playerHP =
+	{
+		.pos = {1240.0f,400.0f},
+		.width = 30.0f,
+		.height = 200.0f,
+	};
+
+
+
+	//敵のHP//
+	/////////////////////////
+
+	//HPのハンドル
+	int HpHandle = Novice::LoadTexture("./Resources/images/HP.png");
+	Enemy enemyHP =
+	{
+	10.0f,
+	10.0f,
+	30.0f,
+	200.0f,
+	};
+	////////////////////////
 
 
 // --- enemyBullet初期化 ---
@@ -161,7 +177,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		enemyBullet[i].isBulletShot = false;
 	}
 
-
+	int game = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -181,306 +197,341 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{
 		case TITLE:
 
-			if (!Novice::IsPlayingAudio(playHandle)) //サウンドが再生されているか
-			{
-				playHandle = Novice::PlayAudio(TitleBGM, false, 1.0f);//サウンドを再生する
-			}
+			
 
 
 
 
 
-			if (!keys[DIK_SPACE] && preKeys[DIK_SPACE] == 0)
+			if (keys[DIK_SPACE])
 			{
 				scene = OPENE;
 				enemyCount = 40;
-				Novice::StopAudio(playHandle);//サウンドが停止される
+				playerCount = 5;
+				enemyHP.height = 200;
+				
 			}
-			Novice::ScreenPrintf(500, 500, "title");
-
+			
 
 
 			break;
 
 		case OPENE:
-			if (!Novice::IsPlayingAudio(playHandle))//サウンドが再生されているか
-			{
-				playHandle = Novice::PlayAudio(SousaBGM, false, 1.0f);//サウンドを再生する
 
-			}
+			
 
-			if (!keys[DIK_SPACE] && preKeys[DIK_SPACE] == 0)
+			
+
+			if (keys[DIK_RETURN])
 			{
 				scene = GAME;
-				Novice::StopAudio(playHandle);//サウンドが停止される
+				game = true;
 			}
 			Novice::ScreenPrintf(500, 500, "opene");
 
 			break;
 
 		case GAME:
-			if (!Novice::IsPlayingAudio(playHandle)) //サウンドが再生されているか
+			if (game)
 			{
-				playHandle = Novice::PlayAudio(BoseBGM, false, 1.0f);//サウンドを再生する
-			}
-			Novice::ScreenPrintf(500, 500, "game");
+				//	プレイヤーのHP
+				Novice::DrawBox(
+					static_cast<int>(playerHP.pos.x),
+					static_cast<int>(playerHP.pos.y),
+					static_cast<int>(playerHP.width),
+					static_cast<int>(playerHP.height), 0.0f, WHITE, kFillModeSolid);
+				Novice::ScreenPrintf(600, 600, "%f", playerHP.height);
 
-			if (keys[DIK_W])
-			{
-				player.pos.y -= player.speed;
-			}
-			if (keys[DIK_S])
-			{
-				player.pos.y += player.speed;
-			}
-			if (keys[DIK_A])
-			{
-				player.pos.x -= player.speed;
-			}
-			if (keys[DIK_D])
-			{
-				player.pos.x += player.speed;
-			}
-			//玉の属性の切り替え
-			if (keys[DIK_Q])
-			{
-				playerbullet1.type = 1;
-			}
-			//玉の属性の切り替え
-			if (keys[DIK_E])
-			{
-				playerbullet2.type = 2;
-			}
-			if (playerbullet1.isShot == false || playerbullet2.isShot == false) {
-				if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
+				Novice::DrawSprite(static_cast<int>(enemyHP.pos.x), static_cast<int>(enemyHP.pos.y), HpHandle, 0.0f, 0.0f, 1.0f, kFillModeSolid);
+				Novice::DrawBox(
+					static_cast<int>(enemyHP.pos.x),
+					static_cast<int>(enemyHP.pos.y),
+					static_cast<int>(enemyHP.width),
+					static_cast<int>(enemyHP.height), 0.0f, WHITE, kFillModeSolid);//HP表示
+
+
+				Novice::ScreenPrintf(500, 500, "game");
+
+				if (keys[DIK_W])
 				{
-					playerbullet1.pos.y = player.pos.x;
-					playerbullet2.pos.y = player.pos.x;
-					//スペースを押したときのplayerbullet1の動き
-					if (playerbullet1.type == 1)
-					{
-
-						playerbullet1.isShot = true;
-					}
-
-
-					////スペースを押したときのplayerbullet2の動き
-					if (playerbullet2.type == 2)
-					{
-
-						playerbullet2.isShot = true;
-					}
-					if (playerbullet1.isShot == 0 || playerbullet2.isShot == 0)
+					player.pos.y -= player.speed;
+				}
+				if (keys[DIK_S])
+				{
+					player.pos.y += player.speed;
+				}
+				if (keys[DIK_A])
+				{
+					player.pos.x -= player.speed;
+				}
+				if (keys[DIK_D])
+				{
+					player.pos.x += player.speed;
+				}
+				//玉の属性の切り替え
+				if (keys[DIK_Q])
+				{
+					playerbullet1.type = 1;
+				}
+				//玉の属性の切り替え
+				if (keys[DIK_E])
+				{
+					playerbullet2.type = 2;
+				}
+				if (playerbullet1.isShot == false || playerbullet2.isShot == false) {
+					if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
 					{
 						playerbullet1.pos.y = player.pos.x;
-						playerbullet1.isShot = true;
 						playerbullet2.pos.y = player.pos.x;
-						playerbullet2.isShot = true;
+						//スペースを押したときのplayerbullet1の動き
+						if (playerbullet1.type == 1)
+						{
+
+							playerbullet1.isShot = true;
+						}
+
+
+						////スペースを押したときのplayerbullet2の動き
+						if (playerbullet2.type == 2)
+						{
+
+							playerbullet2.isShot = true;
+						}
+						if (playerbullet1.isShot == 0 || playerbullet2.isShot == 0)
+						{
+							playerbullet1.pos.y = player.pos.x;
+							playerbullet1.isShot = true;
+							playerbullet2.pos.y = player.pos.x;
+							playerbullet2.isShot = true;
+						}
+
+
+					}
+				}
+				if (playerbullet1.isShot == 1)
+				{
+					playerbullet1.pos.y -= playerbullet1.speed;
+
+					if (playerbullet1.pos.y < 0)
+					{
+						playerbullet1.isShot = false;
+						playerbullet1.pos.y = player.pos.x;
+
 					}
 
 
 				}
-			}
-			if (playerbullet1.isShot == 1)
-			{
-				playerbullet1.pos.y -= playerbullet1.speed;
-
-				if (playerbullet1.pos.y < 0)
+				if (playerbullet2.isShot == 1)
 				{
-					playerbullet1.isShot = false;
-					playerbullet1.pos.y = player.pos.x;
-
-				}
-
-
-			}
-			if (playerbullet2.isShot == 1)
-			{
-				playerbullet2.pos.y -= playerbullet2.speed;
-				if (playerbullet2.pos.y < 0)
-				{
-					playerbullet2.isShot = false;
-					playerbullet2.pos.y = player.pos.x;
-				}
-			}
-
-
-
-			//platerの描画
-			Novice::DrawBox(
-				static_cast<int>(player.pos.x),
-				static_cast<int>(player.pos.y),
-				static_cast<int>(player.radius),
-				static_cast<int>(player.radius),
-				0.0f, WHITE, kFillModeSolid);
-			if (playerbullet1.isShot) {
-				Novice::DrawEllipse(
-					static_cast<int>(playerbullet1.pos.x),
-					static_cast<int>(playerbullet1.pos.y),
-					static_cast<int>(playerbullet1.radius),
-					static_cast<int>(playerbullet1.radius),
-					0.0f, WHITE, kFillModeSolid);
-			}
-			if (playerbullet2.isShot) {
-				Novice::DrawEllipse(
-					static_cast<int>(playerbullet2.pos.x),
-					static_cast<int>(playerbullet2.pos.y),
-					static_cast<int>(playerbullet2.radius),
-					static_cast<int>(playerbullet2.radius),
-					0.0f, WHITE, kFillModeSolid);
-			}
-			Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
-			Novice::ScreenPrintf(20, 40, "%d", playerbullet1.isShot);
-
-			////////////////////////////
-			//敵の動き、ワープの処理///
-			///////////////////////////
-
-			//敵の動き//
-			///////////
-
-			if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
-			{
-				enemyCount--;
-			}
-
-			if (enemyCount >= 40)
-			{
-				enemyMove = true;
-			}
-
-			//最初の動き//
-			if (enemyMove)
-			{
-				enemy.pos.x += enemy.speed;
-				if (enemy.pos.x > 1280 - enemy.width)
-				{
-					enemy.speed = -enemy.speed;
-				}
-				if (enemy.pos.x < 0)
-				{
-					enemy.speed = -enemy.speed;
-				}
-			}
-
-			if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
-			{
-				enemyCount--;
-			}
-			//第二の動き
-			/*if(enemyCount <20)
-			{
-				enemyMove = false;
-				enemyMoveFlag = true;
-			}
-			if (enemyMoveFlag)
-			{
-				t += 1.0f / 120.0f;
-				if (1.0f < t)
-				{
-					t = 1.0f;
-				}
-				enemy.pos.x = (1.0f - t) * enemy.pos.x + 80.0f;
-				enemy.pos.y = (1.0f - t) * enemy.pos.y + 80.0f;
-			}*/
-			//if( enemy.pos.x = 80. && enemy.pos.y = 80.0f )
-
-
-
-
-
-
-
-
-
-
-
-
-			//ワープ
-
-			if (enemyCount < 0)
-			{
-				enemyMoveFlag = false;
-				enemyMove = false;
-				enemyTimer++;
-				if (enemyWave)
-				{
-					//波打つ動き
-					enemy.pos.x = static_cast<float>(sin(theta)) * amplitude + 540;
-					theta += float(M_PI) / 100.0f;
-				}
-
-				if (enemyTimer == 200)
-				{
-					enemyWave = false;
-					//左下
-					enemy.pos.x = 80.0f;
-					enemy.pos.y = 600.0f;
-				}
-				if (enemyTimer == 500)
-				{
-					enemyWave = false;
-					//右下
-					enemy.pos.x = 1000.0f;
-					enemy.pos.y = 600.0f;
-				}
-				if (enemyTimer == 800)
-				{
-					enemyWave = false;
-					//右上
-					enemy.pos.x = 1000.0f;
-					enemy.pos.y = 80.0f;
-				}
-				if (enemyTimer == 1100)
-				{
-					enemyWave = false;
-					//左上
-					enemy.pos.x = 80.0f;
-					enemy.pos.y = 80.0f;
-					enemyTimer = 0.0f;
-				}
-			}
-
-
-
-			////////////////////////////////////
-		   ////////////////////////////////////
-
-
-		   // --- 敵の弾 ---
-			for (int i = 0; i < enemyBullet[0].columns; ++i) {
-				if (!enemyBullet[i].isBulletShot) {
-					enemyBullet[i].isBulletShot = true;
-
-
-					enemyBullet[i].pos.y = enemy.pos.y + enemy.height;
-				}
-
-				if (enemyBullet[i].isBulletShot) {
-					enemyBullet[i].pos.y += enemyBullet[i].speed;
-					if (enemyBullet[i].pos.y + enemyBullet[i].height >= 720.0f) {
-						enemyBullet[i].isBulletShot = false;
+					playerbullet2.pos.y -= playerbullet2.speed;
+					if (playerbullet2.pos.y < 0)
+					{
+						playerbullet2.isShot = false;
+						playerbullet2.pos.y = player.pos.x;
 					}
 				}
+
+
+
+				//platerの描画
+				Novice::DrawBox(
+					static_cast<int>(player.pos.x),
+					static_cast<int>(player.pos.y),
+					static_cast<int>(player.radius),
+					static_cast<int>(player.radius),
+					0.0f, WHITE, kFillModeSolid);
+				if (playerbullet1.isShot) {
+					Novice::DrawEllipse(
+						static_cast<int>(playerbullet1.pos.x),
+						static_cast<int>(playerbullet1.pos.y),
+						static_cast<int>(playerbullet1.radius),
+						static_cast<int>(playerbullet1.radius),
+						0.0f, WHITE, kFillModeSolid);
+				}
+				if (playerbullet2.isShot) {
+					Novice::DrawEllipse(
+						static_cast<int>(playerbullet2.pos.x),
+						static_cast<int>(playerbullet2.pos.y),
+						static_cast<int>(playerbullet2.radius),
+						static_cast<int>(playerbullet2.radius),
+						0.0f, WHITE, kFillModeSolid);
+				}
+				Novice::ScreenPrintf(20, 20, "%f", playerbullet1.pos.y);
+				Novice::ScreenPrintf(20, 40, "%d", playerbullet1.isShot);
+
+				////////////////////////////
+				//敵の動き、ワープの処理///
+				///////////////////////////
+
+				//敵の動き//
+				///////////
+
+				//HP//
+				////////////////////////////////////////////
+
+				if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
+				{
+					enemyCount--;
+					enemyHP.height -= 5;
+				}
+
+				if (enemyHP.height == 200)
+				{
+					enemyHP.height = 200;
+				}
+
+				if (!keys[DIK_J] && preKeys[DIK_J])
+				{
+					playerCount--;
+					playerHP.height -= 40;
+				}
+
+				if (playerHP.height == 200)
+				{
+					playerHP.height = 200;
+				}
+
+				///////////////////////////////////////////
+
+
+
+				if (enemyCount >= 40)
+				{
+					enemyMove = true;
+				}
+
+				//最初の動き//
+				if (enemyMove)
+				{
+					enemy.pos.x += enemy.speed;
+					if (enemy.pos.x > 1280 - enemy.width)
+					{
+						enemy.speed = -enemy.speed;
+					}
+					if (enemy.pos.x < 0)
+					{
+						enemy.speed = -enemy.speed;
+					}
+				}
+
+
+				//第二の動き
+				/*if(enemyCount <20)
+				{
+					enemyMove = false;
+					enemyMoveFlag = true;
+				}
+				if (enemyMoveFlag)
+				{
+					t += 1.0f / 120.0f;
+					if (1.0f < t)
+					{
+						t = 1.0f;
+					}
+					enemy.pos.x = (1.0f - t) * enemy.pos.x + 80.0f;
+					enemy.pos.y = (1.0f - t) * enemy.pos.y + 80.0f;
+				}*/
+				//if( enemy.pos.x = 80. && enemy.pos.y = 80.0f )
+
+
+
+
+
+
+
+
+
+
+
+
+				//ワープ
+
+				if (enemyCount < 0)
+				{
+					enemyMoveFlag = false;
+					enemyMove = false;
+					enemyTimer++;
+					if (enemyWave)
+					{
+						//波打つ動き
+						enemy.pos.x = static_cast<float>(sin(theta)) * amplitude + 540;
+						theta += float(M_PI) / 100.0f;
+					}
+
+					if (enemyTimer == 200)
+					{
+						enemyWave = false;
+						//左下
+						enemy.pos.x = 80.0f;
+						enemy.pos.y = 600.0f;
+					}
+					if (enemyTimer == 500)
+					{
+						enemyWave = false;
+						//右下
+						enemy.pos.x = 1000.0f;
+						enemy.pos.y = 600.0f;
+					}
+					if (enemyTimer == 800)
+					{
+						enemyWave = false;
+						//右上
+						enemy.pos.x = 1000.0f;
+						enemy.pos.y = 80.0f;
+					}
+					if (enemyTimer == 1100)
+					{
+						enemyWave = false;
+						//左上
+						enemy.pos.x = 80.0f;
+						enemy.pos.y = 80.0f;
+						enemyTimer = 0.0f;
+					}
+				}
+
+
+
+				////////////////////////////////////
+			   ////////////////////////////////////
+
+
+			   // --- 敵の弾 ---
+				for (int i = 0; i < enemyBullet[0].columns; ++i) {
+					if (!enemyBullet[i].isBulletShot) {
+						enemyBullet[i].isBulletShot = true;
+
+
+						enemyBullet[i].pos.y = enemy.pos.y + enemy.height;
+					}
+
+					if (enemyBullet[i].isBulletShot) {
+						enemyBullet[i].pos.y += enemyBullet[i].speed;
+						if (enemyBullet[i].pos.y + enemyBullet[i].height >= 720.0f) {
+							enemyBullet[i].isBulletShot = false;
+						}
+					}
+				}
+
+				if (enemyCount == 0)
+				{
+					scene = CLEAR;
+					game = false;
+				}
+
+				if (!keys[DIK_H] && preKeys[DIK_H])
+				{
+					scene = OVER;
+					game = false;
+				}
+
 			}
-
-			if(enemyCount < 0)
-			{
-				scene = CLEAR;
-			}
-
-			if (!keys[DIK_H] && preKeys[DIK_H])
-			{
-				scene = OVER;
-			}
-
-
 			break;
 
 			case CLEAR:
 				if (!keys[DIK_SPACE] && preKeys[DIK_SPACE])
 				{
 					scene = TITLE;
+					
 				}
 				Novice::ScreenPrintf(500, 500, "clear");
 				break;
@@ -512,7 +563,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			
 			Novice::ScreenPrintf(0, 0, "%f", enemyTimer);
-			
+			Novice::ScreenPrintf(500, 500, "title");
+
 
 			break;
 
@@ -524,7 +576,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		case GAME:
 
-			Novice::ScreenPrintf(0, 100, "%d", enemyCount);
+			Novice::ScreenPrintf(700, 100, "%d", enemyCount);
 			for (int j = 0; j < enemyBullet[0].columns; ++j) {
 				if (enemyBullet[j].isBulletShot) {
 					Novice::DrawBox(
