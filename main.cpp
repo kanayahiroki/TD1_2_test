@@ -700,13 +700,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		);
 
 
-		Novice::ScreenPrintf(20, 20, "%f", strightBullet1.pos.y);
-		Novice::ScreenPrintf(20, 40, "%d", type);
-		Novice::ScreenPrintf(20, 60, "%d", backBullet1.isShot);
-		Novice::ScreenPrintf(20, 80, "%d", direction);
-		Novice::ScreenPrintf(20, 100, "%d", leftBulletCount);
-		Novice::ScreenPrintf(20, 120, "%d", rightBulletCount);
-		Novice::ScreenPrintf(20, 140, "%d", playerHP);
+		
 
 		///
 		/// ↑描画処理ここまで
