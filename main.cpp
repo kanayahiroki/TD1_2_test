@@ -9,12 +9,7 @@ struct Vector2 {
 	float y;
 };
 
-struct Enemy {
-	Vector2 pos;
-	float width;
-	float height;
-	float speed;
-};
+
 
 struct Bullet {
 	Vector2 pos;
@@ -129,13 +124,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	// --- enemy初期化 ---
-	Enemy enemy = {};
-	enemy.pos.x = 200.0f;
-	enemy.pos.y = 100.0f;
-	enemy.height = 100.0f;
-	enemy.width = 200.0f;
-
+	
 	Player player{};
 	player.pos.x = 640.0f;
 	player.pos.y = 620.0f;
@@ -689,15 +678,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				rightHandHandle, 1, 1,
 				0.0f, WHITE);
 		}
-		// 敵描画
-		Novice::DrawBox(
-			int(enemy.pos.x),
-			int(enemy.pos.y),
-			int(enemy.width),
-			int(enemy.height),
-			0.0f, WHITE,
-			kFillModeSolid
-		);
+		
 
 
 		
